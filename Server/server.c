@@ -7,78 +7,83 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-void* clientThread(void* _client)
-{
-    int client = (int)(size_t) _client;
-    printf("Client #%d Connected!\n", client);
-    fflush(stdout);
-    
-    while (true)
-    {
-        char data[255] = "";
-        int r = recv(client, data, sizeof(data), 0);
-        if (r <= 0) break;
-        printf("Client %d> %s\n", client, data);
-        fflush(stdout);
-        send(client, data, sizeof(data), 0);
-    }
-    
-    printf("Client %d Disconnected!\n", client);
-    fflush(stdout);
-    return NULL;
-}
+#define DATA_SIZE 255
+#define PORT 9001
 
 int startServer()
 {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(9001);
+    addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
     bind(sock, (struct sockaddr*)&addr, sizeof(addr));
     return sock;
 }
 
-int awaitConnection(int sock)
+int awaitTransmissions(int players[], int playerCount, char data[][DATA_SIZE])
 {
-    listen(sock, 1);
-    return accept(sock, NULL, NULL);
-}
-
-pthread_t startThread(int client)
-{
-    pthread_t thread;
-    pthread_create(&thread, NULL, clientThread, (void*)(size_t)client);
-    return thread;
-}
-
-void joinThreads(pthread_t* threads)
-{
-    int n = sizeof(threads);
-    for (int i = 0; i < n; i++) pthread_join(threads[i], NULL);
-}
-
-void connectionLoop(int sock)
-{
-    pthread_t threads[100];
-    int i = 0;
-    while (i < 100)
+    for (int i = 0; i < playerCount; i++)
     {
-        int client = awaitConnection(sock);
-        threads[i] = startThread(client);
-        i++;
+        int player = players[i];
+        for (int j = 0; j < DATA_SIZE; j++) data[i][j] = '\0';
+        int r = recv(player, data[i], sizeof(data[i]), 0);
+        if (r <= 0) return -1;
+        printf("From Player %d> %s\n", i, data[i]);
+        fflush(stdout);
     }
-    
-    joinThreads(threads);
+    return 0;
+}
+
+int broadcastTransmissions(int players[], int playerCount, char data[][DATA_SIZE])
+{
+    for (int i = 0; i < playerCount; i++)
+    {
+        int player = players[i];
+        for (int j = 0; j < playerCount; j++)
+        {
+            int r = send(player, data[j], DATA_SIZE, 0);
+            if (r <= 0) return -1;
+            printf("To Player %d> %s\n", i, data[j]);
+            fflush(stdout);
+        }
+    }
+    return 0;
+}
+
+void awaitPlayers(int sock, int players[], int playerCount)
+{
+    for (int i = 0; i < playerCount; i++)
+    {
+        listen(sock, 1);
+        players[i] = accept(sock, NULL, NULL);
+        char login[2];
+        login[0] = (char)playerCount;
+        login[1] = (char)i;
+        send(players[i], login, 2, 0);
+        printf("Player %d Connected\n", i);
+        fflush(stdout);
+    }
 }
 
 int main(int argc, char const* argv[])
 {
-    printf("Spachemin Server!\n");
+    printf("*** Spachemin Server ***\n");
     fflush(stdout);
+        
+    int playerCount = atoi(argv[1]);
+    int players[playerCount];
+    char data[playerCount][DATA_SIZE];
     
     int sock = startServer();
-    connectionLoop(sock);
+    awaitPlayers(sock, players, playerCount);
+    printf("All Players Connected\n");
+    fflush(stdout);
+    while (true)
+    {
+        if (awaitTransmissions(players, playerCount, data) < 0) return -1;
+        if (broadcastTransmissions(players, playerCount, data) < 0) return -1;
+    }
     
     return 0;
 }
