@@ -1,11 +1,74 @@
 using System.Net.Sockets;
-using System.Text;
-using System.Diagnostics;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Spachemin;
 
-public class Spachemin
+public class Spachemin : GraphicsEngine
 {
+    private const float SPEED_PLAYER = 0.05f;
+    
+    private readonly int playerCount;
+    private readonly Stream stream;
+    
+    private Spachemin(Stream stream, int _playerCount)
+    {
+        this.playerCount = _playerCount;
+        this.stream = stream;
+        
+        Size = (700, 700);
+        Title = "Spachemin";
+        UpdateFrequency = 60.0;
+        players = new Vector3[playerCount];
+        for (int i = 0; i < players.Length; i++) players[i] = Vector3.Zero;
+    }
+
+    protected override void OnUpdateFrame(FrameEventArgs args)
+    {
+        base.OnUpdateFrame(args);
+        
+        if (KeyboardState.IsKeyDown(Keys.Escape)) Close();
+        
+        Input inputLocal = new Input();
+        inputLocal.W = KeyboardState.IsKeyDown(Keys.W);
+        inputLocal.A = KeyboardState.IsKeyDown(Keys.A);
+        inputLocal.S = KeyboardState.IsKeyDown(Keys.S);
+        inputLocal.D = KeyboardState.IsKeyDown(Keys.D);
+        
+        Input[] inputRemote = Step(inputLocal);
+        for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i]);
+        
+        //Thread.Sleep(100);
+    }
+    
+    private Input[] Step(Input input)
+    {
+        const int bufferLen = 3;
+        byte[] myData = new byte[bufferLen];
+        byte x = Utils.EncodeInput(input)[0];
+        myData[0] = x;
+        stream.Write(myData, 0, myData.Length);
+        Input[] output = new Input[playerCount];
+        for (int i = 0; i < playerCount; i++)
+        {
+            byte[] buffer = new byte[bufferLen];
+            _ = stream.Read(buffer, 0, buffer.Length);
+            output[i] = Utils.DecodeInput(buffer);
+        }
+        return output;
+    }
+    
+    private void ProcessInput(int id, Input input)
+    {
+        Vector3 position = players[id];
+        if (input.W) position.Y += SPEED_PLAYER;
+        if (input.A) position.X -= SPEED_PLAYER;
+        if (input.S) position.Y -= SPEED_PLAYER;
+        if (input.D) position.X += SPEED_PLAYER;
+        players[id] = position;
+    }
+
     public static void Main()
     {
         Console.WriteLine("Hello, Spachemin!");
@@ -21,50 +84,11 @@ public class Spachemin
         byte[] loginData = new byte[2];
         _ = stream.Read(loginData, 0, 2);
         int playerCount = loginData[0];
-        int id = loginData[1];
         
-        OnConnect(stream, playerCount, id);
+        Console.WriteLine("Connected");
+        Spachemin x = new Spachemin(stream, playerCount);
+        x.Run();
         
         client.Close();
-    }
-    
-    private static void OnConnect(Stream stream, int playerCount, int id)
-    {
-        Console.WriteLine("Connected");
-        while (true)
-        {
-            string? input = Console.ReadLine();
-            if (input == null) input = "";
-            if (input.Length == 0) break;
-            Console.WriteLine("Sending...");
-            Stopwatch watch = SendTransmission(stream, input);
-            for (int i = 0; i < playerCount; i++)
-            {
-                long latency;
-                string str = ReceiveTransmission(stream, watch, out latency);
-                Console.WriteLine("Player " + i + "> " + str + " (" + latency + ")");
-            }
-        }
-    }
-
-    private static Stopwatch SendTransmission(Stream stream, string data)
-    {
-        ASCIIEncoding encoder = new ASCIIEncoding();
-        byte[] transData = encoder.GetBytes(data);
-        Stopwatch watch = Stopwatch.StartNew();
-        stream.Write(transData, 0, transData.Length);
-        return watch;
-    }
-
-    private static string ReceiveTransmission(Stream stream, Stopwatch watch, out long latency)
-    {
-        const int BUFFER_SIZE = 255;
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int len = stream.Read(buffer, 0, BUFFER_SIZE);
-        watch.Stop();
-        latency = watch.ElapsedMilliseconds;
-        string str = "";
-        for (int i = 0; i < len; i++) str += Convert.ToChar(buffer[i]);
-        return str.Replace("\0", "").Trim();
     }
 }

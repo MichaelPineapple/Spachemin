@@ -1,5 +1,5 @@
-#define DATA_MAX 255
-#define PLAYER_MAX 10
+#define DATA_MAX 3
+#define PLAYER_MAX 5
 #define QUEUE_MAX 100
 
 typedef struct
@@ -31,6 +31,8 @@ void constructTickQueue(TickQueue* q)
 
 void enqueue(TickQueue* q, TickData value)
 {
+    if ((q->tail - q->head) > (QUEUE_MAX - 1)) printf("NO MORE SPACE!");
+    if (q->tail >= QUEUE_MAX) q->tail = 0;
     q->array[q->tail] = value;
     q->tail++;
 }
@@ -38,5 +40,7 @@ void enqueue(TickQueue* q, TickData value)
 TickData dequeue(TickQueue* q)
 {
     q->head++;
+    if (q->head >= QUEUE_MAX) q->head = 0;
+    if (q->head == q->tail) printf("Queue Empty! (head=%d, tail=%d)\n", q->head, q->tail);
     return q->array[q->head];
 }

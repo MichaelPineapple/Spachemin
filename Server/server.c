@@ -11,6 +11,12 @@
 
 #define PORT 9001
 
+void printData(char data[])
+{
+    for (int i = 0; i < DATA_MAX; i++) printf("%d ", data[i]);
+    printf("\n");
+}
+
 int startServer()
 {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -31,7 +37,8 @@ int awaitTransmissions(int players[], int playerCount, TickQueue* q)
         int player = players[i];
         int r = recv(player, data.data[i], DATA_MAX, 0);
         if (r <= 0) return -1;
-        printf("From Player %d> %s\n", i, data.data[i]);
+        printf("From Player %d> ", i);
+        printData(data.data[i]);
         fflush(stdout);
     }
     enqueue(q, data);
@@ -48,7 +55,8 @@ int broadcastTransmissions(int players[], int playerCount, TickQueue* q)
         {
             int r = send(player, data.data[j], DATA_MAX, 0);
             if (r <= 0) return -1;
-            printf("To Player %d> %s\n", i, data.data[j]);
+            printf("To Player %d> ", i);
+            printData(data.data[j]);
             fflush(stdout);
         }
     }
