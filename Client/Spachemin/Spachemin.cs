@@ -39,6 +39,7 @@ public class Spachemin
             long latency = watch.ElapsedMilliseconds;
             string ackStr = "";
             for (int i = 0; i < ackLen; i++) ackStr += Convert.ToChar(ackData[i]);
+            ackStr = ackStr.Replace("\0", "").Trim();
             Console.WriteLine("ACK: " + ackStr + " (" + latency + ")");
         }
     }
