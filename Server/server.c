@@ -7,7 +7,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#define DATA_SIZE 255
+#include "tickdata.c"
+
 #define PORT 9001
 
 int startServer()
@@ -21,30 +22,33 @@ int startServer()
     return sock;
 }
 
-int awaitTransmissions(int players[], int playerCount, char data[][DATA_SIZE])
+int awaitTransmissions(int players[], int playerCount, TickQueue* q)
 {
+    TickData data;
+    setTickData(&data, '\0');
     for (int i = 0; i < playerCount; i++)
     {
         int player = players[i];
-        for (int j = 0; j < DATA_SIZE; j++) data[i][j] = '\0';
-        int r = recv(player, data[i], sizeof(data[i]), 0);
+        int r = recv(player, data.data[i], DATA_MAX, 0);
         if (r <= 0) return -1;
-        printf("From Player %d> %s\n", i, data[i]);
+        printf("From Player %d> %s\n", i, data.data[i]);
         fflush(stdout);
     }
+    enqueue(q, data);
     return 0;
 }
 
-int broadcastTransmissions(int players[], int playerCount, char data[][DATA_SIZE])
+int broadcastTransmissions(int players[], int playerCount, TickQueue* q)
 {
+    TickData data = dequeue(q);
     for (int i = 0; i < playerCount; i++)
     {
         int player = players[i];
         for (int j = 0; j < playerCount; j++)
         {
-            int r = send(player, data[j], DATA_SIZE, 0);
+            int r = send(player, data.data[j], DATA_MAX, 0);
             if (r <= 0) return -1;
-            printf("To Player %d> %s\n", i, data[j]);
+            printf("To Player %d> %s\n", i, data.data[j]);
             fflush(stdout);
         }
     }
@@ -72,8 +76,17 @@ int main(int argc, char const* argv[])
     fflush(stdout);
         
     int playerCount = atoi(argv[1]);
+    int tickDelay = atoi(argv[2]);
     int players[playerCount];
-    char data[playerCount][DATA_SIZE];
+    TickQueue q;
+    constructTickQueue(&q);
+    
+    for (int i = 0; i < tickDelay; i++)
+    {
+        TickData data;
+        setTickData(&data, '\0');
+        enqueue(&q, data);
+    }
     
     int sock = startServer();
     awaitPlayers(sock, players, playerCount);
@@ -81,8 +94,8 @@ int main(int argc, char const* argv[])
     fflush(stdout);
     while (true)
     {
-        if (awaitTransmissions(players, playerCount, data) < 0) return -1;
-        if (broadcastTransmissions(players, playerCount, data) < 0) return -1;
+        if (awaitTransmissions(players, playerCount, &q) < 0) return -1;
+        if (broadcastTransmissions(players, playerCount, &q) < 0) return -1;
     }
     
     return 0;

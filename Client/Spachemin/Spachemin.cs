@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using System.Text;
+using System.Diagnostics;
 
 namespace Spachemin;
 
@@ -36,27 +37,32 @@ public class Spachemin
             if (input == null) input = "";
             if (input.Length == 0) break;
             Console.WriteLine("Sending...");
-            SendTransmission(stream, input);
+            Stopwatch watch = SendTransmission(stream, input);
             for (int i = 0; i < playerCount; i++)
             {
-                string str = ReceiveTransmission(stream);
-                Console.WriteLine("Player " + i + "> " + str);
+                long latency;
+                string str = ReceiveTransmission(stream, watch, out latency);
+                Console.WriteLine("Player " + i + "> " + str + " (" + latency + ")");
             }
         }
     }
 
-    private static void SendTransmission(Stream stream, string data)
+    private static Stopwatch SendTransmission(Stream stream, string data)
     {
         ASCIIEncoding encoder = new ASCIIEncoding();
         byte[] transData = encoder.GetBytes(data);
+        Stopwatch watch = Stopwatch.StartNew();
         stream.Write(transData, 0, transData.Length);
+        return watch;
     }
 
-    private static string ReceiveTransmission(Stream stream)
+    private static string ReceiveTransmission(Stream stream, Stopwatch watch, out long latency)
     {
         const int BUFFER_SIZE = 255;
         byte[] buffer = new byte[BUFFER_SIZE];
         int len = stream.Read(buffer, 0, BUFFER_SIZE);
+        watch.Stop();
+        latency = watch.ElapsedMilliseconds;
         string str = "";
         for (int i = 0; i < len; i++) str += Convert.ToChar(buffer[i]);
         return str.Replace("\0", "").Trim();
