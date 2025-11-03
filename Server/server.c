@@ -52,7 +52,6 @@ void recieveTransmissions(int players[], int playerCount, bool valid[], TickData
         {
             printf("From Player %d> ", i);
             printData(data->data[i]);
-            fflush(stdout);
             valid[i] = true;
         }
     }
@@ -63,17 +62,40 @@ bool broadcastTransmissions(int players[], int playerCount, TickQueue* q)
     TickData data = dequeue(q);
     for (int i = 0; i < playerCount; i++)
     {
-        int player = players[i];
-        for (int j = 0; j < playerCount; j++)
+        for (int j = playerCount - 1; j >= 0; j--)
         {
-            int r = send(player, data.data[j], DATA_MAX, MSG_DONTWAIT);
+            int player = players[j];
+            int r = send(player, data.data[i], DATA_MAX, MSG_DONTWAIT);
             if (r <= 0) return false;
-            printf("To Player %d> ", i);
-            printData(data.data[j]);
-            fflush(stdout);
+            printf("To Player %d> ", j);
+            printData(data.data[i]);
         }
     }
     return true;
+}
+
+void syncPlayers(int players[], int playerCount)
+{
+    for (int i = 0; i < playerCount; i++)
+    {
+        char login[2];
+        login[0] = (char)playerCount;
+        login[1] = (char)i;
+        send(players[i], login, 2, 0);
+    }
+    
+    bool sync[playerCount];
+    clearBools(sync, playerCount, false);
+    while (!checkAllBools(sync, playerCount))
+    {
+        for (int i = 0; i < playerCount; i++)
+        {
+            int player = players[i];
+            char buffer[1];
+            recv(player, buffer, 1, 0);
+            if (buffer[0] == 69) sync[i] = true;
+        }
+    }
 }
 
 void awaitPlayers(int sock, int players[], int playerCount)
@@ -82,10 +104,6 @@ void awaitPlayers(int sock, int players[], int playerCount)
     {
         listen(sock, 1);
         players[i] = accept(sock, NULL, NULL);
-        char login[2];
-        login[0] = (char)playerCount;
-        login[1] = (char)i;
-        send(players[i], login, 2, 0);
         printf("Player %d Connected\n", i);
         fflush(stdout);
     }
@@ -114,6 +132,9 @@ int main(int argc, char const* argv[])
     printf("All Players Connected\n");
     fflush(stdout);
     
+    syncPlayers(players, playerCount);
+    printf("Players Synched\n");
+    
     TickData buffer;
     bool valid[playerCount];
     while (true)
@@ -127,6 +148,7 @@ int main(int argc, char const* argv[])
         
         recieveTransmissions(players, playerCount, valid, &buffer);
         if (checkAllBools(valid, playerCount)) enqueue(&q, buffer);
+        fflush(stdout);
     }
     
     return 0;

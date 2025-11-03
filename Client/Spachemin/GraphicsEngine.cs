@@ -17,6 +17,7 @@ public class GraphicsEngine : GameWindow
     private float aspectRatio;
 
     protected Vector3[] players;
+    protected readonly Vector3[] colors = new Vector3[10];
     
     public GraphicsEngine() : base(GameWindowSettings.Default, NativeWindowSettings.Default) { }
     
@@ -50,7 +51,7 @@ public class GraphicsEngine : GameWindow
 
     private void RenderPlayer(int i)
     {
-        Vector3 color = Vector3.One;
+        Vector3 color = colors[i];
         Vector3 pos = players[i];
         Matrix4 model = Matrix4.CreateTranslation(pos);
         GL.UniformMatrix4(ulModel, true, ref model);

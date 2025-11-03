@@ -11,6 +11,7 @@ public class Spachemin : GraphicsEngine
     
     private readonly int playerCount;
     private readonly Stream stream;
+
     
     private Spachemin(Stream stream, int _playerCount)
     {
@@ -22,6 +23,9 @@ public class Spachemin : GraphicsEngine
         UpdateFrequency = 60.0;
         players = new Vector3[playerCount];
         for (int i = 0; i < players.Length; i++) players[i] = Vector3.Zero;
+        
+        colors[0] = new Vector3(1.0f, 0.0f, 0.0f);
+        colors[1] = new Vector3(0.0f, 0.0f, 1.0f);
     }
 
     protected override void OnUpdateFrame(FrameEventArgs args)
@@ -82,6 +86,7 @@ public class Spachemin : GraphicsEngine
         byte[] loginData = new byte[2];
         _ = stream.Read(loginData, 0, 2);
         int playerCount = loginData[0];
+        stream.Write(new byte[] {69}, 0, 1);
         
         Console.WriteLine("Connected");
         Spachemin x = new Spachemin(stream, playerCount);
