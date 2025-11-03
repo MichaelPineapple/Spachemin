@@ -29,9 +29,13 @@ void constructTickQueue(TickQueue* q)
     for (int i = 0; i < QUEUE_MAX; i++) setTickData(&q->array[i], '0');
 }
 
+bool isQueueEmpty(TickQueue* q)
+{
+    return ((q->head + 1) == q->tail);
+}
+
 void enqueue(TickQueue* q, TickData value)
 {
-    if ((q->tail - q->head) > (QUEUE_MAX - 1)) printf("NO MORE SPACE!");
     if (q->tail >= QUEUE_MAX) q->tail = 0;
     q->array[q->tail] = value;
     q->tail++;
@@ -41,6 +45,6 @@ TickData dequeue(TickQueue* q)
 {
     q->head++;
     if (q->head >= QUEUE_MAX) q->head = 0;
-    if (q->head == q->tail) printf("Queue Empty! (head=%d, tail=%d)\n", q->head, q->tail);
     return q->array[q->head];
 }
+

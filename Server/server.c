@@ -17,6 +17,20 @@ void printData(char data[])
     printf("\n");
 }
 
+bool checkAllBools(bool array[], int len)
+{
+    for (int i = 0; i < len; i++)
+    {
+        if (!array[i]) return false;
+    }
+    return true;
+}
+
+void clearBools(bool array[], int len, bool val)
+{
+    for (int i = 0; i < len; i++) array[i] = val;
+}
+
 int startServer()
 {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -28,24 +42,23 @@ int startServer()
     return sock;
 }
 
-int awaitTransmissions(int players[], int playerCount, TickQueue* q)
+void recieveTransmissions(int players[], int playerCount, bool valid[], TickData* data)
 {
-    TickData data;
-    setTickData(&data, '\0');
     for (int i = 0; i < playerCount; i++)
     {
         int player = players[i];
-        int r = recv(player, data.data[i], DATA_MAX, 0);
-        if (r <= 0) return -1;
-        printf("From Player %d> ", i);
-        printData(data.data[i]);
-        fflush(stdout);
+        int r = recv(player, data->data[i], DATA_MAX, MSG_DONTWAIT);
+        if (r > 0)
+        {
+            printf("From Player %d> ", i);
+            printData(data->data[i]);
+            fflush(stdout);
+            valid[i] = true;
+        }
     }
-    enqueue(q, data);
-    return 0;
 }
 
-int broadcastTransmissions(int players[], int playerCount, TickQueue* q)
+bool broadcastTransmissions(int players[], int playerCount, TickQueue* q)
 {
     TickData data = dequeue(q);
     for (int i = 0; i < playerCount; i++)
@@ -53,14 +66,14 @@ int broadcastTransmissions(int players[], int playerCount, TickQueue* q)
         int player = players[i];
         for (int j = 0; j < playerCount; j++)
         {
-            int r = send(player, data.data[j], DATA_MAX, 0);
-            if (r <= 0) return -1;
+            int r = send(player, data.data[j], DATA_MAX, MSG_DONTWAIT);
+            if (r <= 0) return false;
             printf("To Player %d> ", i);
             printData(data.data[j]);
             fflush(stdout);
         }
     }
-    return 0;
+    return true;
 }
 
 void awaitPlayers(int sock, int players[], int playerCount)
@@ -100,10 +113,20 @@ int main(int argc, char const* argv[])
     awaitPlayers(sock, players, playerCount);
     printf("All Players Connected\n");
     fflush(stdout);
+    
+    TickData buffer;
+    bool valid[playerCount];
     while (true)
     {
-        if (awaitTransmissions(players, playerCount, &q) < 0) return -1;
-        if (broadcastTransmissions(players, playerCount, &q) < 0) return -1;
+        if (!isQueueEmpty(&q))
+        {
+            if (!broadcastTransmissions(players, playerCount, &q)) return -1;
+            setTickData(&buffer, '\0');
+            clearBools(valid, playerCount, false);
+        }
+        
+        recieveTransmissions(players, playerCount, valid, &buffer);
+        if (checkAllBools(valid, playerCount)) enqueue(&q, buffer);
     }
     
     return 0;

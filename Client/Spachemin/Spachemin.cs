@@ -7,7 +7,7 @@ namespace Spachemin;
 
 public class Spachemin : GraphicsEngine
 {
-    private const float SPEED_PLAYER = 0.05f;
+    private const float SPEED_PLAYER = 0.02f;
     
     private readonly int playerCount;
     private readonly Stream stream;
@@ -38,8 +38,6 @@ public class Spachemin : GraphicsEngine
         
         Input[] inputRemote = Step(inputLocal);
         for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i]);
-        
-        //Thread.Sleep(100);
     }
     
     private Input[] Step(Input input)
