@@ -137,18 +137,23 @@ int main(int argc, char const* argv[])
     
     TickData buffer;
     bool valid[playerCount];
+    int t = 0;
     while (true)
     {
         if (!isQueueEmpty(&q))
         {
             if (!broadcastTransmissions(players, playerCount, &q)) return -1;
-            setTickData(&buffer, '\0');
-            clearBools(valid, playerCount, false);
         }
         
         recieveTransmissions(players, playerCount, valid, &buffer);
-        if (checkAllBools(valid, playerCount)) enqueue(&q, buffer);
+        if (checkAllBools(valid, playerCount)) 
+        {
+            enqueue(&q, buffer);
+            setTickData(&buffer, '\0');
+            clearBools(valid, playerCount, false);
+        }
         fflush(stdout);
+        t++;
     }
     
     return 0;
