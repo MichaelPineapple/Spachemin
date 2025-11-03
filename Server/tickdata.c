@@ -1,6 +1,6 @@
 #define DATA_MAX 3
 #define PLAYER_MAX 5
-#define QUEUE_MAX 100
+#define QUEUE_MAX 1000
 
 typedef struct
 {
