@@ -135,6 +135,16 @@ public class Utils
         }
         return output;
     }
+    
+    public static byte[] BytesFromInt(int val)
+    {
+        byte[] output = new byte[4];
+        output[0] = (byte)(val >> 24);
+        output[1] = (byte)(val >> 16);
+        output[2] = (byte)(val >> 8);
+        output[3] = (byte)(val);
+        return output;
+    }
 }
 
 public struct Input

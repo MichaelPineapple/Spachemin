@@ -10,12 +10,15 @@ public class Spachemin : GraphicsEngine
     private const float SPEED_PLAYER = 0.02f;
     
     private readonly int playerCount;
+    private readonly int frameDelay;
     private readonly Stream stream;
 
+    private int frame = 0;
     
-    private Spachemin(Stream stream, int _playerCount)
+    private Spachemin(Stream stream, int _playerCount, int _frameDelay)
     {
         this.playerCount = _playerCount;
+        this.frameDelay = _frameDelay;
         this.stream = stream;
         
         Size = (700, 700);
@@ -40,16 +43,22 @@ public class Spachemin : GraphicsEngine
         inputLocal.S = KeyboardState.IsKeyDown(Keys.S);
         inputLocal.D = KeyboardState.IsKeyDown(Keys.D);
         
-        Input[] inputRemote = Step(inputLocal);
+        Input[] inputRemote = Step(frame + frameDelay, inputLocal);
         for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i]);
+        frame++;
     }
     
-    private Input[] Step(Input input)
+    private Input[] Step(int _frame, Input input)
     {
         const int bufferLen = 3;
-        byte[] myData = new byte[bufferLen];
+        byte[] myData = new byte[bufferLen + 4];
         byte x = Utils.EncodeInput(input)[0];
-        myData[0] = x;
+        byte[] frameBytes = Utils.BytesFromInt(_frame);
+        myData[0] = frameBytes[0];
+        myData[1] = frameBytes[1];
+        myData[2] = frameBytes[2];
+        myData[3] = frameBytes[3];
+        myData[4] = x;
         stream.Write(myData, 0, myData.Length);
         Input[] output = new Input[playerCount];
         for (int i = 0; i < playerCount; i++)
@@ -83,13 +92,14 @@ public class Spachemin : GraphicsEngine
         client.Connect(ip, 9001);
         Stream stream = client.GetStream();
         
-        byte[] loginData = new byte[2];
-        _ = stream.Read(loginData, 0, 2);
+        byte[] loginData = new byte[3];
+        _ = stream.Read(loginData, 0, 3);
         int playerCount = loginData[0];
+        int frameDelay = loginData[2];
         stream.Write(new byte[] {69}, 0, 1);
         
         Console.WriteLine("Connected");
-        Spachemin x = new Spachemin(stream, playerCount);
+        Spachemin x = new Spachemin(stream, playerCount, frameDelay);
         x.Run();
         
         client.Close();

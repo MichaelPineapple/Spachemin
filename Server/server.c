@@ -7,29 +7,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "tickdata.c"
+#include "framequeue.c"
 
 #define PORT 9001
-
-void printData(char data[])
-{
-    for (int i = 0; i < DATA_MAX; i++) printf("%d ", data[i]);
-    printf("\n");
-}
-
-bool checkAllBools(bool array[], int len)
-{
-    for (int i = 0; i < len; i++)
-    {
-        if (!array[i]) return false;
-    }
-    return true;
-}
-
-void clearBools(bool array[], int len, bool val)
-{
-    for (int i = 0; i < len; i++) array[i] = val;
-}
 
 int startServer()
 {
@@ -42,51 +22,20 @@ int startServer()
     return sock;
 }
 
-void recieveTransmissions(int players[], int playerCount, bool valid[], TickData* data)
+void syncPlayers(int players[], int playerCount, int frameDelay)
 {
     for (int i = 0; i < playerCount; i++)
     {
-        int player = players[i];
-        int r = recv(player, data->data[i], DATA_MAX, MSG_DONTWAIT);
-        if (r > 0)
-        {
-            printf("From Player %d> ", i);
-            printData(data->data[i]);
-            valid[i] = true;
-        }
-    }
-}
-
-bool broadcastTransmissions(int players[], int playerCount, TickQueue* q)
-{
-    TickData data = dequeue(q);
-    for (int i = 0; i < playerCount; i++)
-    {
-        for (int j = playerCount - 1; j >= 0; j--)
-        {
-            int player = players[j];
-            int r = send(player, data.data[i], DATA_MAX, MSG_DONTWAIT);
-            if (r <= 0) return false;
-            printf("To Player %d> ", j);
-            printData(data.data[i]);
-        }
-    }
-    return true;
-}
-
-void syncPlayers(int players[], int playerCount)
-{
-    for (int i = 0; i < playerCount; i++)
-    {
-        char login[2];
+        char login[3];
         login[0] = (char)playerCount;
         login[1] = (char)i;
-        send(players[i], login, 2, 0);
+        login[2] = (char)frameDelay;
+        send(players[i], login, 3, 0);
     }
     
     bool sync[playerCount];
     clearBools(sync, playerCount, false);
-    while (!checkAllBools(sync, playerCount))
+    while (!checkBools(sync, playerCount))
     {
         for (int i = 0; i < playerCount; i++)
         {
@@ -109,52 +58,81 @@ void awaitPlayers(int sock, int players[], int playerCount)
     }
 }
 
+void recieveTrans(FrameQueue* q, int players[], int playerCount)
+{
+    for (int i = 0; i < playerCount; i++)
+    {
+        int bufferLen = MAX_DATA + 4;
+        char buffer[bufferLen];
+        int r = recv(players[i], buffer, bufferLen, MSG_DONTWAIT);
+        if (r > 0)
+        {
+            int frameIndex = bytesToInt((unsigned char*)buffer);
+            printf("From Player %d (%d)> ", i, frameIndex);
+            printData(buffer, bufferLen);
+            put(q, frameIndex, i, buffer, 4);
+        }
+    }
+}
+
+bool sendTrans(FrameQueue* q, int players[], int playerCount)
+{
+    FrameData frame = get(q);
+    for (int i = 0; i < playerCount; i++)
+    {
+        for (int j = 0; j < playerCount; j++)
+        {
+            int r = send(players[j], frame.data[i], MAX_DATA, 0);
+            if (r <= 0) return false;
+            printf("To Player %d (%d)> ", j, q->current - 1);
+            printData(frame.data[i], MAX_DATA);
+        }
+    }
+    return true;
+}
+
+void coreLoop(int players[], int playerCount, int frameDelay)
+{
+    FrameQueue q;
+    initializeFrameQueue(&q, playerCount);
+    addDelay(&q, frameDelay);
+    
+    int t = 0;
+    while (true)
+    {
+        recieveTrans(&q, players, playerCount);
+        
+        if (hasNext(&q))
+        {
+            if (!sendTrans(&q, players, playerCount)) break;
+        }
+        
+        usleep(10000);
+        //printf("%d\n", t);
+        fflush(stdout);
+        t++;
+    }
+}
+
 int main(int argc, char const* argv[])
 {
     printf("*** Spachemin Server ***\n");
     fflush(stdout);
         
     int playerCount = atoi(argv[1]);
-    int tickDelay = atoi(argv[2]);
+    int frameDelay = atoi(argv[2]);
     int players[playerCount];
-    TickQueue q;
-    constructTickQueue(&q);
-    
-    for (int i = 0; i < tickDelay; i++)
-    {
-        TickData data;
-        setTickData(&data, '\0');
-        enqueue(&q, data);
-    }
     
     int sock = startServer();
     awaitPlayers(sock, players, playerCount);
     printf("All Players Connected\n");
     fflush(stdout);
     
-    syncPlayers(players, playerCount);
-    printf("Players Synched\n");
-    
-    TickData buffer;
-    bool valid[playerCount];
-    int t = 0;
-    while (true)
-    {
-        if (!isQueueEmpty(&q))
-        {
-            if (!broadcastTransmissions(players, playerCount, &q)) return -1;
-        }
-        
-        recieveTransmissions(players, playerCount, valid, &buffer);
-        if (checkAllBools(valid, playerCount)) 
-        {
-            enqueue(&q, buffer);
-            setTickData(&buffer, '\0');
-            clearBools(valid, playerCount, false);
-        }
-        fflush(stdout);
-        t++;
-    }
+    syncPlayers(players, playerCount, frameDelay);
+    printf("Player Sync\n");
+    fflush(stdout);
+
+    coreLoop(players, playerCount, frameDelay);
     
     return 0;
 }
