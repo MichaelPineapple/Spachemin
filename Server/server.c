@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <netinet/tcp.h>
 
+#include "utils.c"
 #include "framequeue.c"
 
 #define PORT 9001
@@ -71,8 +72,6 @@ void recieveTrans(FrameQueue* q, int players[], int playerCount)
         if (r > 0)
         {
             int frameIndex = bytesToInt((unsigned char*)buffer);
-            printf("From Player %d (%d)> ", i, frameIndex);
-            printData(buffer, bufferLen);
             put(q, frameIndex, i, buffer, 4);
         }
     }
@@ -85,10 +84,7 @@ bool sendTrans(FrameQueue* q, int players[], int playerCount)
     {
         for (int j = 0; j < playerCount; j++)
         {
-            int r = send(players[j], frame.data[i], MAX_DATA, 0);
-            if (r <= 0) return false;
-            printf("To Player %d (%d)> ", j, q->current - 1);
-            printData(frame.data[i], MAX_DATA);
+            if (send(players[j], frame.data[i], MAX_DATA, 0) <= 0) return false;
         }
     }
     return true;
@@ -100,20 +96,10 @@ void coreLoop(int players[], int playerCount, int frameDelay)
     initializeFrameQueue(&q, playerCount);
     addDelay(&q, frameDelay);
     
-    int t = 0;
     while (true)
     {
         recieveTrans(&q, players, playerCount);
-        
-        if (hasNext(&q))
-        {
-            if (!sendTrans(&q, players, playerCount)) break;
-        }
-        
-        usleep(10000);
-        //printf("%d\n", t);
-        fflush(stdout);
-        t++;
+        if (hasNext(&q) && !sendTrans(&q, players, playerCount)) break;
     }
 }
 
