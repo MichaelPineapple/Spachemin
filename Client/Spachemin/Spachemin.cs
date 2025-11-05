@@ -1,7 +1,7 @@
-using System.Net.Sockets;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using SpacheNet;
 
 namespace Spachemin;
 
@@ -9,24 +9,17 @@ public class Spachemin : GraphicsEngine
 {
     private const float SPEED_PLAYER = 0.02f;
     
-    private readonly int playerCount;
-    private readonly int frameDelay;
-    private readonly Stream stream;
-
-    private int frame = 0;
+    private readonly SpacheNetClient net;
     
-    private Spachemin(Stream stream, int _playerCount, int _frameDelay)
+    private Spachemin(SpacheNetClient _net)
     {
-        this.playerCount = _playerCount;
-        this.frameDelay = _frameDelay;
-        this.stream = stream;
-        
+        this.net = _net;
         Size = (700, 700);
         Title = "Spachemin";
         UpdateFrequency = 60.0;
-        players = new Vector3[playerCount];
-        for (int i = 0; i < players.Length; i++) players[i] = Vector3.Zero;
         
+        players = new Vector3[net.PlayerCount];
+        for (int i = 0; i < players.Length; i++) players[i] = Vector3.Zero;
         colors[0] = new Vector3(1.0f, 0.0f, 0.0f);
         colors[1] = new Vector3(0.0f, 0.0f, 1.0f);
     }
@@ -43,30 +36,15 @@ public class Spachemin : GraphicsEngine
         inputLocal.S = KeyboardState.IsKeyDown(Keys.S);
         inputLocal.D = KeyboardState.IsKeyDown(Keys.D);
         
-        Input[] inputRemote = Step(frame + frameDelay, inputLocal);
+        Input[] inputRemote = Step(inputLocal);
         for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i]);
-        frame++;
     }
     
-    private Input[] Step(int _frame, Input input)
+    private Input[] Step(Input input)
     {
-        const int bufferLen = 3;
-        byte[] myData = new byte[bufferLen + 4];
-        byte x = Utils.EncodeInput(input)[0];
-        byte[] frameBytes = Utils.BytesFromInt(_frame);
-        myData[0] = frameBytes[0];
-        myData[1] = frameBytes[1];
-        myData[2] = frameBytes[2];
-        myData[3] = frameBytes[3];
-        myData[4] = x;
-        stream.Write(myData, 0, myData.Length);
-        Input[] output = new Input[playerCount];
-        for (int i = 0; i < playerCount; i++)
-        {
-            byte[] buffer = new byte[bufferLen];
-            _ = stream.Read(buffer, 0, buffer.Length);
-            output[i] = Utils.DecodeInput(buffer);
-        }
+        byte[][] matrix = net.Step(Utils.EncodeInput(input));
+        Input[] output = new Input[matrix.Length];
+        for (int i = 0; i < matrix.Length; i++) output[i] = Utils.DecodeInput(matrix[i]);
         return output;
     }
     
@@ -83,26 +61,11 @@ public class Spachemin : GraphicsEngine
     public static void Main()
     {
         Console.WriteLine("Hello, Spachemin!");
-        string? ip = Console.ReadLine(); // 44.245.211.131
-        if (ip == null) ip = "";
-        if (ip.Length == 0) ip = "127.0.0.1";
-        Console.WriteLine("Connecting to `" + ip + "`...");
-        
-        TcpClient client = new TcpClient();
-        client.NoDelay = true;
-        client.Connect(ip, 9001);
-        Stream stream = client.GetStream();
-        
-        byte[] loginData = new byte[3];
-        _ = stream.Read(loginData, 0, 3);
-        int playerCount = loginData[0];
-        int frameDelay = loginData[2];
-        stream.Write(new byte[] {69}, 0, 1);
-        
+        SpacheNetClient net = new SpacheNetClient(Console.ReadLine());
+        net.Connect();
         Console.WriteLine("Connected");
-        Spachemin x = new Spachemin(stream, playerCount, frameDelay);
+        Spachemin x = new Spachemin(net);
         x.Run();
-        
-        client.Close();
+        net.Disconnect();        
     }
 }
