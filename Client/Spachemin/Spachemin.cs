@@ -89,6 +89,7 @@ public class Spachemin : GraphicsEngine
         Console.WriteLine("Connecting to `" + ip + "`...");
         
         TcpClient client = new TcpClient();
+        client.NoDelay = true;
         client.Connect(ip, 9001);
         Stream stream = client.GetStream();
         

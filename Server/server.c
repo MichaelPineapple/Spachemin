@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <netinet/tcp.h>
 
 #include "framequeue.c"
 
@@ -19,6 +20,8 @@ int startServer()
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
     bind(sock, (struct sockaddr*)&addr, sizeof(addr));
+    int x = 1;
+    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &x, sizeof(x));
     return sock;
 }
 
