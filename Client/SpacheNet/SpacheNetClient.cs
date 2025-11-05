@@ -18,6 +18,7 @@ public class SpacheNetClient
     private TcpClient? client;
 
     public int PlayerCount { get; private set; }
+    public int PlayerId { get; private set; }
     private int frame;
     
     public SpacheNetClient(string? _ip, int _port = PORT_DEFAULT)
@@ -43,6 +44,7 @@ public class SpacheNetClient
         byte[] loginBuffer = new byte[3];
         _ = stream?.Read(loginBuffer, 0, loginBuffer.Length);
         PlayerCount = loginBuffer[0];
+        PlayerId = loginBuffer[1];
         frame = loginBuffer[2];
         stream?.Write(LOGIN_KEY, 0, LOGIN_KEY.Length);
     }
