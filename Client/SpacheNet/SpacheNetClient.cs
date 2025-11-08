@@ -6,32 +6,21 @@ public class SpacheNetClient
 {
     private const string IP_LOCALHOST = "127.0.0.1";
     private const int PORT_DEFAULT = 9001;
-    
+    private const byte LOGIN_KEY = 69;
     public const int MAX_DATA = 3;
-    
-    private static readonly byte[] LOGIN_KEY = new byte[]{ 69 };
-
-    private readonly string ip;
-    private readonly int port;
     
     private Stream? stream;
     private TcpClient? client;
-
+    
+    private int frame;
     public int PlayerCount { get; private set; }
     public int PlayerId { get; private set; }
-    private int frame;
     
-    public SpacheNetClient(string? _ip, int _port = PORT_DEFAULT)
-    {
-        if (_ip == null) _ip = "";
-        if (_ip.Length == 0) _ip = IP_LOCALHOST;
-        this.ip = _ip;
-        this.port = _port;
-    }
-
-    public void Connect()
+    public void Connect(string? ip, int port = PORT_DEFAULT)
     {
         if (stream != null) throw new Exception("Client already connected!");
+        if (ip == null) ip = "";
+        if (ip.Length == 0) ip = IP_LOCALHOST;
         client = new TcpClient();
         client.Connect(ip, port);
         stream = client.GetStream();
@@ -46,7 +35,7 @@ public class SpacheNetClient
         PlayerId = loginBuffer[1];
         frame = loginBuffer[2];
         client.NoDelay = (loginBuffer[3] != 0);
-        stream?.Write(LOGIN_KEY, 0, LOGIN_KEY.Length);
+        stream?.Write(new []{ LOGIN_KEY }, 0, 1);
     }
     
     public byte[][] Step(byte[] data)

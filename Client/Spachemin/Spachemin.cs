@@ -61,8 +61,8 @@ public class Spachemin : GraphicsEngine
     public static void Main()
     {
         Console.WriteLine("Hello, Spachemin!");
-        SpacheNetClient net = new SpacheNetClient(Console.ReadLine());
-        net.Connect();
+        SpacheNetClient net = new SpacheNetClient();
+        net.Connect(Console.ReadLine());
         Console.WriteLine("Connected");
         Spachemin x = new Spachemin(net);
         x.Run();
