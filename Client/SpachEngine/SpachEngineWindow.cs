@@ -1,11 +1,11 @@
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
-namespace Spachemin;
+namespace SpachEngine;
 
-public class GraphicsEngine : GameWindow
+public class SpachEngineWindow : GameWindow
 {
     private int shaderDefault;
     private int playerVAO;
@@ -19,17 +19,17 @@ public class GraphicsEngine : GameWindow
     protected Vector3[] players;
     protected readonly Vector3[] colors = new Vector3[10];
     
-    public GraphicsEngine() : base(GameWindowSettings.Default, NativeWindowSettings.Default) { }
+    public SpachEngineWindow() : base(GameWindowSettings.Default, NativeWindowSettings.Default) { }
     
     protected override void OnLoad()
     {
         base.OnLoad();
         
-        shaderDefault = Utils.CreateShader();
+        shaderDefault = SpachEngineUtils.CreateShader();
         GL.UseProgram(shaderDefault);
 
-        float[] playerMesh = Utils.CreateSquareMesh(0.1f);
-        playerVAO = Utils.CreateVAO(playerMesh, shaderDefault);
+        float[] playerMesh = SpachEngineUtils.CreateSquareMesh(0.1f);
+        playerVAO = SpachEngineUtils.CreateVAO(playerMesh, shaderDefault);
         GL.BindVertexArray(playerVAO);
         
         ulColor = GL.GetUniformLocation(shaderDefault, "color");

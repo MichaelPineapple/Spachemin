@@ -16,11 +16,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="OpenTK" Version="4.9.4" />
+      <ProjectReference Include="..\SpacheNet\SpacheNet.csproj" />
+      <ProjectReference Include="..\SpachEngine\SpachEngine.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SpacheNet\SpacheNet.csproj" />
+      <PackageReference Include="OpenTK" Version="4.9.4" />
     </ItemGroup>
 
 </Project>
