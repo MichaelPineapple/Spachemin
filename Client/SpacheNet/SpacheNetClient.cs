@@ -45,12 +45,24 @@ public class SpacheNetClient
         data = PrependData(data, new byte[MAX_DATA]);
         data = PrependData(frameIndexData, data);
         stream?.Write(data, 0, MAX_DATA + frameIndexData.Length);
+        int bufferLen = PlayerCount * MAX_DATA;
+        byte[] buffer = new byte[bufferLen];
+        _ = stream?.Read(buffer, 0, bufferLen);
+        
         byte[][] output = new byte[PlayerCount][];
-        for (int i = 0; i < PlayerCount; i++)
+        int j = -1;
+        for (int i = 0; i < bufferLen; i++)
         {
-            output[i] = new byte[MAX_DATA];
-            _ = stream?.Read(output[i], 0, MAX_DATA);
+            int k = i % MAX_DATA;
+            if (k == 0)
+            {
+                j++;
+                output[j] = new byte[MAX_DATA];
+            }
+
+            output[j][k] = buffer[i];
         }
+        
         frame++;
         return output;
     }

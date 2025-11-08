@@ -79,12 +79,20 @@ void recieveTrans(FrameQueue* q, int players[], int playerCount)
 bool sendTrans(FrameQueue* q, int players[], int playerCount)
 {
     FrameData frame = get(q);
+    int bufferLen = playerCount * MAX_DATA;
+    char buffer[bufferLen];
     for (int i = 0; i < playerCount; i++)
     {
+        int b = 0;
         for (int j = 0; j < playerCount; j++)
         {
-            if (send(players[j], frame.data[i], MAX_DATA, 0) <= 0) return false;
+            for (int d = 0; d < MAX_DATA; d++)
+            {
+                buffer[b] = frame.data[j][d];
+                b++;
+            }
         }
+        if (send(players[i], buffer, bufferLen, 0) <= 0) return false;
     }
     return true;
 }
