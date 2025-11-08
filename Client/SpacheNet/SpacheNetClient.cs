@@ -33,7 +33,6 @@ public class SpacheNetClient
     {
         if (stream != null) throw new Exception("Client already connected!");
         client = new TcpClient();
-        client.NoDelay = true;
         client.Connect(ip, port);
         stream = client.GetStream();
         Login();
@@ -41,11 +40,12 @@ public class SpacheNetClient
     
     private void Login()
     {
-        byte[] loginBuffer = new byte[3];
+        byte[] loginBuffer = new byte[4];
         _ = stream?.Read(loginBuffer, 0, loginBuffer.Length);
         PlayerCount = loginBuffer[0];
         PlayerId = loginBuffer[1];
         frame = loginBuffer[2];
+        client.NoDelay = (loginBuffer[3] != 0);
         stream?.Write(LOGIN_KEY, 0, LOGIN_KEY.Length);
     }
     

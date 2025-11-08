@@ -13,7 +13,7 @@
 
 #define PORT 9001
 
-int startServer()
+int startServer(int nagle)
 {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in addr;
@@ -21,20 +21,20 @@ int startServer()
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
     bind(sock, (struct sockaddr*)&addr, sizeof(addr));
-    int x = 1;
-    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &x, sizeof(x));
+    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &nagle, sizeof(nagle));
     return sock;
 }
 
-void syncPlayers(int players[], int playerCount, int frameDelay)
+void syncPlayers(int players[], int playerCount, int frameDelay, int nagle)
 {
     for (int i = 0; i < playerCount; i++)
     {
-        char login[3];
+        char login[4];
         login[0] = (char)playerCount;
         login[1] = (char)i;
         login[2] = (char)frameDelay;
-        send(players[i], login, 3, 0);
+        login[3] = (char)nagle;
+        send(players[i], login, 4, 0);
     }
     
     bool sync[playerCount];
@@ -110,14 +110,15 @@ int main(int argc, char const* argv[])
         
     int playerCount = atoi(argv[1]);
     int frameDelay = atoi(argv[2]);
-    int players[playerCount];
+    int nagle = atoi(argv[3]);
     
-    int sock = startServer();
+    int players[playerCount];
+    int sock = startServer(nagle);
     awaitPlayers(sock, players, playerCount);
     printf("All Players Connected\n");
     fflush(stdout);
     
-    syncPlayers(players, playerCount, frameDelay);
+    syncPlayers(players, playerCount, frameDelay, nagle);
     printf("Player Sync\n");
     fflush(stdout);
 
