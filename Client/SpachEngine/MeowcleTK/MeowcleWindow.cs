@@ -7,35 +7,63 @@ namespace SpachEngine.MeowcleTK;
 
 public class MeowcleWindow : MeowcleWinWindow
 {
-    private readonly double updatePeriod;
+    private readonly double UpdatePeriod;
+    private readonly double RenderPeriod;
+    
+    private Thread RenderThread;
+    private bool StopRender;
+    
     protected float MeowcleAspectRatio { get; private set; }
     
-    public MeowcleWindow(double fps = 60.0f)
+    public MeowcleWindow(double updateFps = 60.0f, double renderFps = 60.0f)
     {
-        updatePeriod = 1.0 / fps;
+        UpdatePeriod = 1.0 / updateFps;
+        RenderPeriod = 1.0 / renderFps;
+        RenderThread = new Thread(RenderThreadFunction);
     }
     
     public override void Run()
     {
+        RenderThread.Start();
+        
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
-        
         while (!ShouldClose())
         {
             double elapsed = stopwatch.Elapsed.TotalSeconds;
-            if (elapsed > updatePeriod)
+            if (elapsed > RenderPeriod)
             {
                 stopwatch.Restart();
                 NewInputFrame();
                 GLFW.PollEvents();
                 OnUpdateFrame(elapsed);
+            }
+        }
+
+        StopRender = true;
+        RenderThread.Join();
+        base.Run();
+    }
+
+    private void RenderThreadFunction()
+    {
+        InitializeGraphicsContext();
+        OnLoadGraphics();
+        
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+        while (!StopRender)
+        {
+            double elapsed = stopwatch.Elapsed.TotalSeconds;
+            if (elapsed > UpdatePeriod)
+            {
+                stopwatch.Restart();
                 OnRenderFrame(elapsed);
                 Context.SwapBuffers();
             }
         }
-
-        OnUnload();
-        base.Run();
+        
+        OnUnloadGraphics();
     }
     
     protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
@@ -44,7 +72,8 @@ public class MeowcleWindow : MeowcleWinWindow
         MeowcleAspectRatio = Size.X / (float)Size.Y;
     }
     
-    protected virtual void OnUnload() { }
-    protected virtual void OnUpdateFrame(double dt) { }
+    protected virtual void OnLoadGraphics() { }
+    protected virtual void OnUnloadGraphics() { }
     protected virtual void OnRenderFrame(double dt) { }
+    protected virtual void OnUpdateFrame(double dt) { }
 }

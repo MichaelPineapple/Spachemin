@@ -13,10 +13,10 @@ public class SpachEngineWindow : MeowcleWindow
     private int ulModel;
     private int ulProjj;
     
-    protected Vector3[] players;
+    protected Vector3[] players = new Vector3[3];
     protected readonly Vector3[] colors = new Vector3[10];
-
-    public SpachEngineWindow()
+    
+    protected override void OnLoadGraphics()
     {
         shaderDefault = SpachEngineUtils.CreateShader();
         GL.UseProgram(shaderDefault);
@@ -29,7 +29,7 @@ public class SpachEngineWindow : MeowcleWindow
         ulModel = GL.GetUniformLocation(shaderDefault, "model");
         ulProjj = GL.GetUniformLocation(shaderDefault, "projj");
     }
-    
+
     protected override void OnRenderFrame(double dt)
     {
         GL.Clear(ClearBufferMask.ColorBufferBit);
@@ -48,7 +48,7 @@ public class SpachEngineWindow : MeowcleWindow
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
     
-    protected override void OnUnload()
+    protected override void OnUnloadGraphics()
     {
         GL.DeleteProgram(shaderDefault);
     }
