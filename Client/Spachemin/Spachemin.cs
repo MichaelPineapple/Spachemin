@@ -20,6 +20,16 @@ public class Spachemin : SpachEngineWindow
         colors[1] = new Vector3(0.0f, 0.0f, 1.0f);
     }
 
+    protected override void OnLoadGraphics()
+    {
+        string pathApp = Path.GetDirectoryName(Environment.ProcessPath) + "/Assets";
+        string pathShaders = pathApp + "/Shaders";
+        Shader shader = new Shader(pathShaders + "/Default/default.vert", pathShaders + "/Default/default.frag");
+        SetDefaultShader(shader);
+        
+        base.OnLoadGraphics();
+    }
+
     protected override void OnUpdateFrame(double dt)
     {
         if (KeyboardState.IsKeyDown(Keys.Escape)) Close();

@@ -6,7 +6,8 @@ namespace SpachEngine;
 
 public class SpachEngineWindow : MeowcleWindow
 {
-    private int shaderDefault;
+    private Shader ShaderDefault;
+    
     private int playerVAO;
     
     private int ulColor;
@@ -18,19 +19,15 @@ public class SpachEngineWindow : MeowcleWindow
     
     protected override void OnLoadGraphics()
     {
-        string pathApp = Path.GetDirectoryName(Environment.ProcessPath) + "/Assets";
-        
-        string pathShaders = pathApp + "/Shaders";
-        shaderDefault = SpachEngineUtils.LoadShader(pathShaders + "/Default/default.vert", pathShaders + "/Default/default.frag");
-        GL.UseProgram(shaderDefault);
+        GL.UseProgram(ShaderDefault.Handle);
 
         float[] playerMesh = SpachEngineUtils.CreateSquareMesh(0.1f);
-        playerVAO = SpachEngineUtils.CreateVAO(playerMesh, shaderDefault);
+        playerVAO = SpachEngineUtils.CreateVAO(playerMesh, ShaderDefault.Handle);
         GL.BindVertexArray(playerVAO);
         
-        ulColor = GL.GetUniformLocation(shaderDefault, "color");
-        ulModel = GL.GetUniformLocation(shaderDefault, "model");
-        ulProjj = GL.GetUniformLocation(shaderDefault, "projj");
+        ulColor = GL.GetUniformLocation(ShaderDefault.Handle, "color");
+        ulModel = GL.GetUniformLocation(ShaderDefault.Handle, "model");
+        ulProjj = GL.GetUniformLocation(ShaderDefault.Handle, "projj");
     }
 
     protected override void OnRenderFrame(double dt)
@@ -39,6 +36,11 @@ public class SpachEngineWindow : MeowcleWindow
         Matrix4 proj = Matrix4.CreateOrthographicOffCenter(-MeowcleAspectRatio, MeowcleAspectRatio, -1.0f, 1.0f, 1.0f, -1.0f);
         GL.UniformMatrix4(ulProjj, true, ref proj);
         for (int i = 0; i < players.Length; i++) RenderPlayer(i);
+    }
+
+    protected void SetDefaultShader(Shader shader)
+    {
+        ShaderDefault = shader;
     }
 
     private void RenderPlayer(int i)
@@ -53,6 +55,6 @@ public class SpachEngineWindow : MeowcleWindow
     
     protected override void OnUnloadGraphics()
     {
-        GL.DeleteProgram(shaderDefault);
+        GL.DeleteProgram(ShaderDefault.Handle);
     }
 }
