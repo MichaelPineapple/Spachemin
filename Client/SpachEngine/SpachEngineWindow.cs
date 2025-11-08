@@ -1,11 +1,10 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
+using SpachEngine.MeowcleTK;
 
 namespace SpachEngine;
 
-public class SpachEngineWindow : GameWindow
+public class SpachEngineWindow : MeowcleWindow
 {
     private int shaderDefault;
     private int playerVAO;
@@ -14,17 +13,11 @@ public class SpachEngineWindow : GameWindow
     private int ulModel;
     private int ulProjj;
     
-    private float aspectRatio;
-
     protected Vector3[] players;
     protected readonly Vector3[] colors = new Vector3[10];
-    
-    public SpachEngineWindow() : base(GameWindowSettings.Default, NativeWindowSettings.Default) { }
-    
-    protected override void OnLoad()
+
+    public SpachEngineWindow()
     {
-        base.OnLoad();
-        
         shaderDefault = SpachEngineUtils.CreateShader();
         GL.UseProgram(shaderDefault);
 
@@ -37,16 +30,12 @@ public class SpachEngineWindow : GameWindow
         ulProjj = GL.GetUniformLocation(shaderDefault, "projj");
     }
     
-    protected override void OnRenderFrame(FrameEventArgs e)
+    protected override void OnRenderFrame(double dt)
     {
-        base.OnRenderFrame(e);
         GL.Clear(ClearBufferMask.ColorBufferBit);
-        
-        Matrix4 proj = Matrix4.CreateOrthographicOffCenter(-aspectRatio, aspectRatio, -1.0f, 1.0f, 1.0f, -1.0f);
+        Matrix4 proj = Matrix4.CreateOrthographicOffCenter(-MeowcleAspectRatio, MeowcleAspectRatio, -1.0f, 1.0f, 1.0f, -1.0f);
         GL.UniformMatrix4(ulProjj, true, ref proj);
-        
         for (int i = 0; i < players.Length; i++) RenderPlayer(i);
-        SwapBuffers();
     }
 
     private void RenderPlayer(int i)
@@ -57,13 +46,6 @@ public class SpachEngineWindow : GameWindow
         GL.UniformMatrix4(ulModel, true, ref model);
         GL.Uniform3(ulColor, color);
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
-    }
-        
-    protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
-    {
-        base.OnFramebufferResize(e);
-        GL.Viewport(0, 0, e.Width, e.Height);
-        aspectRatio = Size.X / (float)Size.Y;
     }
     
     protected override void OnUnload()
