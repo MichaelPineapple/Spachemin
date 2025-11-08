@@ -58,7 +58,6 @@ void awaitPlayers(int sock, int players[], int playerCount)
         listen(sock, 1);
         players[i] = accept(sock, NULL, NULL);
         printf("Player %d Connected\n", i);
-        fflush(stdout);
     }
 }
 
@@ -90,7 +89,7 @@ bool sendTrans(FrameQueue* q, int players[], int playerCount)
     return true;
 }
 
-void coreLoop(int players[], int playerCount, int frameDelay)
+void loop(int players[], int playerCount, int frameDelay)
 {
     FrameQueue q;
     initializeFrameQueue(&q, playerCount);
@@ -106,7 +105,6 @@ void coreLoop(int players[], int playerCount, int frameDelay)
 int main(int argc, char const* argv[])
 {
     printf("*** Spachemin Server ***\n");
-    fflush(stdout);
         
     int playerCount = atoi(argv[1]);
     int frameDelay = atoi(argv[2]);
@@ -116,13 +114,11 @@ int main(int argc, char const* argv[])
     int sock = startServer(nagle);
     awaitPlayers(sock, players, playerCount);
     printf("All Players Connected\n");
-    fflush(stdout);
     
     syncPlayers(players, playerCount, frameDelay, nagle);
     printf("Player Sync\n");
-    fflush(stdout);
 
-    coreLoop(players, playerCount, frameDelay);
+    loop(players, playerCount, frameDelay);
     
     return 0;
 }
