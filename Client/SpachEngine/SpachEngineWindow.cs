@@ -18,7 +18,10 @@ public class SpachEngineWindow : MeowcleWindow
     
     protected override void OnLoadGraphics()
     {
-        shaderDefault = SpachEngineUtils.CreateShader();
+        string pathApp = Path.GetDirectoryName(Environment.ProcessPath) + "/Assets";
+        
+        string pathShaders = pathApp + "/Shaders";
+        shaderDefault = SpachEngineUtils.LoadShader(pathShaders + "/Default/default.vert", pathShaders + "/Default/default.frag");
         GL.UseProgram(shaderDefault);
 
         float[] playerMesh = SpachEngineUtils.CreateSquareMesh(0.1f);

@@ -4,55 +4,41 @@ namespace SpachEngine;
 
 internal class SpachEngineUtils
 {
-    internal static int CreateShader()
+    public static int LoadShader(string pathShaderVert, string pathShaderFrag)
     {
-        const string vertexShaderSource =
-            "#version 330 core \n" +
-            "in vec2 vert;" +
-            "uniform mat4 model;" +
-            "uniform mat4 projj;" +
-            "void main(){" +
-            "gl_Position = vec4(vert, 0.0, 1.0) * model * projj;" +
-            "}";
-
-        const string fragmentShaderSource =
-            "#version 330 core \n" +
-            "out vec4 FragColor;" +
-            "uniform vec3 color;" +
-            "void main(){" +
-            "FragColor = vec4(color, 1.0f);" +
-            "}";
+        string srcShaderVert = File.ReadAllText(pathShaderVert);
+        string srcShaderFrag = File.ReadAllText(pathShaderFrag);
         
-        int vertexShader = GL.CreateShader(ShaderType.VertexShader);
-        int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+        int shaderVert = GL.CreateShader(ShaderType.VertexShader);
+        int shaderFrag = GL.CreateShader(ShaderType.FragmentShader);
         
-        GL.ShaderSource(vertexShader, vertexShaderSource);
-        GL.ShaderSource(fragmentShader, fragmentShaderSource);
+        GL.ShaderSource(shaderVert, srcShaderVert);
+        GL.ShaderSource(shaderFrag, srcShaderFrag);
         
-        GL.CompileShader(vertexShader);
-        GL.CompileShader(fragmentShader);
+        GL.CompileShader(shaderVert);
+        GL.CompileShader(shaderFrag);
         
-        GL.GetShader(vertexShader, ShaderParameter.CompileStatus, out int succ1);
-        GL.GetShader(fragmentShader, ShaderParameter.CompileStatus, out int succ2);
+        GL.GetShader(shaderVert, ShaderParameter.CompileStatus, out int succ1);
+        GL.GetShader(shaderFrag, ShaderParameter.CompileStatus, out int succ2);
         
-        if (succ1 == 0) Console.WriteLine(GL.GetShaderInfoLog(vertexShader));
-        if (succ2 == 0) Console.WriteLine(GL.GetShaderInfoLog(fragmentShader));
+        if (succ1 == 0) Console.WriteLine(GL.GetShaderInfoLog(shaderVert));
+        if (succ2 == 0) Console.WriteLine(GL.GetShaderInfoLog(shaderFrag));
         
         int program = GL.CreateProgram();
 
-        GL.AttachShader(program, vertexShader);
-        GL.AttachShader(program, fragmentShader);
+        GL.AttachShader(program, shaderVert);
+        GL.AttachShader(program, shaderFrag);
         
         GL.LinkProgram(program);
         GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int succ3);
         
         if (succ3 == 0) Console.WriteLine(GL.GetProgramInfoLog(program));
         
-        GL.DetachShader(program, vertexShader);
-        GL.DetachShader(program, fragmentShader);
+        GL.DetachShader(program, shaderVert);
+        GL.DetachShader(program, shaderFrag);
         
-        GL.DeleteShader(fragmentShader);
-        GL.DeleteShader(vertexShader);
+        GL.DeleteShader(shaderFrag);
+        GL.DeleteShader(shaderVert);
 
         return program;
     }
