@@ -17,8 +17,6 @@ public class SpachWindow : MeowcleWindow
     
     protected Player[] Players = new Player[4];
     private Mesh MeshPlayer;
-
-    private Vector3 LightAmbient = new Vector3(0.5f, 0.5f, 0.5f);
     
     private int shaderDefault;
     
@@ -29,6 +27,8 @@ public class SpachWindow : MeowcleWindow
     private int ulProjj;
     private int ulColor;
     private int ulLightAmb;
+    private int ulLightDirDir;
+    private int ulLightDirColor;
 
     protected int PlayerID;
     
@@ -57,7 +57,12 @@ public class SpachWindow : MeowcleWindow
         ulProjj = GL.GetUniformLocation(shaderDefault, "projj");
         
         ulLightAmb = GL.GetUniformLocation(shaderDefault, "lightAmb");
-        GL.Uniform3(ulLightAmb, LightAmbient);
+        ulLightDirDir = GL.GetUniformLocation(shaderDefault, "lightDirDir");
+        ulLightDirColor = GL.GetUniformLocation(shaderDefault, "lightDirColor");
+        
+        GL.Uniform3(ulLightAmb, new Vector3(0.1f, 0.1f, 0.1f));
+        GL.Uniform3(ulLightDirDir, new Vector3(0.5f, -1.0f, 0.0f));
+        GL.Uniform3(ulLightDirColor, new Vector3(1.0f, 1.0f, 1.0f));
     }
 
     protected override void OnRenderFrame(double dt)
