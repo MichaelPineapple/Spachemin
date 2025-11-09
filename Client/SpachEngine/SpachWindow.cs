@@ -19,7 +19,10 @@ public class SpachWindow : MeowcleWindow
     protected Player[] players = new Player[4];
     
     private int shaderDefault;
+    
     private int vaoPlayer;
+    private int texPlayer;
+    
     private int ulModel;
     private int ulVieww;
     private int ulProjj;
@@ -66,18 +69,24 @@ public class SpachWindow : MeowcleWindow
         shaderDefault = shader.Handle;
     }
 
-    protected void SetPlayerMesh(Mesh mesh)
+    protected void SetPlayerMesh(Mesh mesh, Texture tex)
     {
         vaoPlayer = mesh.VAO;
+        texPlayer = tex.Handle;
     }
 
     private void RenderPlayer(int i)
     {
         Matrix4 model = Matrix4.CreateTranslation(players[i].Position);
         Matrix4 vieww = Matrix4.Identity;
+        
         GL.UniformMatrix4(ulModel, true, ref model);
         GL.UniformMatrix4(ulVieww, true, ref vieww);
         GL.Uniform3(ulColor, players[i].Color);
+        
+        GL.ActiveTexture(TextureUnit.Texture0);
+        GL.BindTexture(TextureTarget.Texture2D, texPlayer);
+        
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }
     
