@@ -17,7 +17,6 @@ public class Mesh
     
     private static float[] ReadObjFile(string path)
     {
-        // Reference: https://en.wikipedia.org/wiki/Wavefront_.obj_file
         try
         {
             List<float> output = new List<float>();
@@ -30,31 +29,9 @@ public class Mesh
                 string[] split = str.Split('/');
                 int[] a = new int[3];
                 for (int i = 0; i < split.Length; i++) a[i] = int.Parse(split[i]) - 1;
-                Vector3 vertex = verticies[a[0]];
-                Vector2 tex = texCoords[a[1]];
-                Vector3 normal = normals[a[2]];
-                
-                for (int i = 0; i < 3; i++)
-                {
-                    float v = vertex[i];
-                    output.Add(v);
-                    Console.Write(v + ", ");
-                }
-
-                for (int i = 0; i < 2; i++)
-                {
-                    float t = tex[i];
-                    output.Add(t);
-                    Console.Write(t + ", ");
-                }
-
-                for (int i = 0; i < 3; i++)
-                {
-                    float n = normal[i];
-                    output.Add(n);
-                    Console.Write(n + ", ");
-                }
-                
+                for (int i = 0; i < 3; i++) output.Add(verticies[a[0]][i]);
+                for (int i = 0; i < 2; i++) output.Add(texCoords[a[1]][i]);
+                for (int i = 0; i < 3; i++) output.Add(normals[a[2]][i]);
                 Console.Write("\n");
             }
             
