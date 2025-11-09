@@ -18,36 +18,44 @@ public class SpacheNetClient
     
     public void Connect(string? ip, int port = PORT_DEFAULT)
     {
-        if (stream != null) throw new Exception("Client already connected!");
-        if (ip == null) ip = "";
-        if (ip.Length == 0) ip = IP_LOCALHOST;
-        client = new TcpClient();
-        client.Connect(ip, port);
-        stream = client.GetStream();
+        if (ip != null)
+        {
+            if (ip.Length == 0) ip = IP_LOCALHOST;
+            client = new TcpClient();
+            client.Connect(ip, port);
+            stream = client.GetStream();
+        }
         Login();
     }
     
     private void Login()
     {
-        byte[] loginBuffer = new byte[4];
-        _ = stream?.Read(loginBuffer, 0, loginBuffer.Length);
-        PlayerCount = loginBuffer[0];
-        PlayerId = loginBuffer[1];
-        frame = loginBuffer[2];
-        client.NoDelay = (loginBuffer[3] != 0);
-        stream?.Write(new []{ LOGIN_KEY }, 0, 1);
+        if (client != null)
+        {
+            byte[] loginBuffer = new byte[4];
+            _ = stream?.Read(loginBuffer, 0, loginBuffer.Length);
+            PlayerCount = loginBuffer[0];
+            PlayerId = loginBuffer[1];
+            frame = loginBuffer[2];
+            client.NoDelay = (loginBuffer[3] != 0);
+            stream?.Write(new[] { LOGIN_KEY }, 0, 1);
+        }
+        else PlayerCount = 1;
     }
     
     public byte[][] Step(byte[] data)
     {
         if (data.Length > MAX_DATA) throw new Exception("Step data exceeds MAX_DATA limit (" + MAX_DATA + ")");
+        
         byte[] frameIndexData = BytesFromInt(frame);
         data = PrependData(data, new byte[MAX_DATA]);
-        data = PrependData(frameIndexData, data);
-        stream?.Write(data, 0, MAX_DATA + frameIndexData.Length);
+        byte[] augmented = PrependData(frameIndexData, data);
+        stream?.Write(augmented, 0, MAX_DATA + frameIndexData.Length);
+        
         int bufferLen = PlayerCount * MAX_DATA;
         byte[] buffer = new byte[bufferLen];
         _ = stream?.Read(buffer, 0, bufferLen);
+        if (stream == null) buffer = data;
         
         byte[][] output = new byte[PlayerCount][];
         int j = -1;
@@ -59,7 +67,6 @@ public class SpacheNetClient
                 j++;
                 output[j] = new byte[MAX_DATA];
             }
-
             output[j][k] = buffer[i];
         }
         
@@ -70,6 +77,7 @@ public class SpacheNetClient
     public void Disconnect()
     {
         client?.Close();
+        client = null;
         stream = null;
     }
     

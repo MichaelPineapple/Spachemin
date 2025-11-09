@@ -6,13 +6,11 @@ namespace Spachemin;
 public class Spachemin : SpachWindow
 {
     private const float SPEED_PLAYER = 0.02f;
-    private readonly SpacheNetClient? Net;
-    private int PlayerId;
+    private readonly SpacheNetClient Net;
     
-    public Spachemin(SpacheNetClient? net)
+    public Spachemin(SpacheNetClient net)
     {
         Net = net;
-        if (Net != null) PlayerId = Net.PlayerId;
         Size = (700, 700);
         Title = "Spachemin";
     }
@@ -37,7 +35,7 @@ public class Spachemin : SpachWindow
         Input inputLocal = new Input(KeyboardState);
         Input[] inputRemote = Step(inputLocal, Net);
         for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i]);
-        PlayerCamera.Position = players[PlayerId].Position;
+        PlayerCamera.Position = players[Net.PlayerId].Position;
     }
     
     private void ProcessInput(int id, Input input)
@@ -49,9 +47,8 @@ public class Spachemin : SpachWindow
         if (input.D) players[id].Position.X += SPEED_PLAYER;
     }
         
-    private static Input[] Step(Input input, SpacheNetClient? net)
+    private static Input[] Step(Input input, SpacheNetClient net)
     {
-        if (net == null) return new [] { new Input(input.ToBytes()) };
         byte[][] matrix = net.Step(input.ToBytes());
         Input[] output = new Input[matrix.Length];
         for (int i = 0; i < matrix.Length; i++) output[i] = new Input(matrix[i]);
