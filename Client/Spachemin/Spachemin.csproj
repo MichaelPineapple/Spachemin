@@ -16,6 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SpacheNet\SpacheNet.csproj" />
       <ProjectReference Include="..\SpachEngine\SpachEngine.csproj" />
     </ItemGroup>
 

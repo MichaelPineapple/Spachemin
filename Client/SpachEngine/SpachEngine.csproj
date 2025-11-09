@@ -19,8 +19,4 @@
       <PackageReference Include="StbImageSharp" Version="2.30.15" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\SpacheNet\SpacheNet.csproj" />
-    </ItemGroup>
-
 </Project>
