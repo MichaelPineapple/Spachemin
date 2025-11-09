@@ -4,7 +4,7 @@ namespace SpachEngine;
 
 public class Player : Camera
 {
-    private const float SPEED = 0.01f;
+    private const float SPEED = 0.025f;
     public Vector3 Color = Vector3.One;
     private Vector2 PrevMousePos = Vector2.Zero;
     private float LookSensitivity = 0.2f;

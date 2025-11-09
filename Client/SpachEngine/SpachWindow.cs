@@ -17,10 +17,12 @@ public class SpachWindow : MeowcleWindow
     
     protected Player[] Players = new Player[4];
     private Mesh MeshPlayer;
+    private Mesh MeshGround;
     
     private int shaderDefault;
     
     private int texPlayer;
+    private int texGround;
     
     private int ulModel;
     private int ulVieww;
@@ -60,9 +62,9 @@ public class SpachWindow : MeowcleWindow
         ulLightDirDir = GL.GetUniformLocation(shaderDefault, "lightDirDir");
         ulLightDirColor = GL.GetUniformLocation(shaderDefault, "lightDirColor");
         
-        GL.Uniform3(ulLightAmb, new Vector3(0.1f, 0.1f, 0.1f));
+        GL.Uniform3(ulLightAmb, new Vector3(0.5f, 0.5f, 0.5f));
         GL.Uniform3(ulLightDirDir, new Vector3(0.5f, -1.0f, 0.0f));
-        GL.Uniform3(ulLightDirColor, new Vector3(1.0f, 1.0f, 1.0f));
+        GL.Uniform3(ulLightDirColor, new Vector3(0.75f, 0.75f, 0.75f));
     }
 
     protected override void OnRenderFrame(double dt)
@@ -76,6 +78,8 @@ public class SpachWindow : MeowcleWindow
         GL.UniformMatrix4(ulProjj, true, ref projj);
         
         for (int i = 0; i < Players.Length; i++) RenderPlayer(Players[i]);
+        
+        RenderGround();
     }
 
     protected void SetDefaultShader(Shader shader)
@@ -87,6 +91,23 @@ public class SpachWindow : MeowcleWindow
     {
         MeshPlayer = mesh;
         texPlayer = tex.Handle;
+    }
+    
+    protected void SetGroundMesh(Mesh mesh, Texture tex)
+    {
+        MeshGround = mesh;
+        texGround = tex.Handle;
+    }
+    
+    private void RenderGround()
+    {
+        Matrix4 model = Matrix4.CreateTranslation(new Vector3(0.0f, -1.0f, 0.0f));
+        GL.UniformMatrix4(ulModel, true, ref model);
+        GL.Uniform3(ulColor, new Vector3(0.25f, 0.25f, 0.25f));
+        GL.ActiveTexture(TextureUnit.Texture0);
+        GL.BindTexture(TextureTarget.Texture2D, texGround);
+        GL.BindVertexArray(MeshGround.VAO);
+        GL.DrawArrays(PrimitiveType.Triangles, 0, MeshGround.VertexLength);
     }
 
     private void RenderPlayer(Player p)

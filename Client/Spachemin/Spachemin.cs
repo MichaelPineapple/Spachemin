@@ -26,11 +26,14 @@ public class Spachemin : SpachWindow
         string pathTextures = pathApp + "Textures/";
         
         Shader shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
-        Mesh playerMesh = new Mesh(pathMeshes + "cube.mesh", shader);
-        Texture playerTex = new Texture(pathTextures + "awesomeface.png");
+        Mesh meshPlayer = new Mesh(pathMeshes + "cube.mesh", shader);
+        Mesh meshGround = new Mesh(pathMeshes + "ground.mesh", shader);
+        Texture texPlayer = new Texture(pathTextures + "grid.png");
+        Texture texGround = new Texture(pathTextures + "grid.png");
         
         SetDefaultShader(shader);
-        SetPlayerMesh(playerMesh, playerTex);
+        SetPlayerMesh(meshPlayer, texPlayer);
+        SetGroundMesh(meshGround, texGround);
         
         base.OnLoadGraphics();
     }
