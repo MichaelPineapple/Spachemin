@@ -6,7 +6,7 @@ using SpachEngine.MeowcleTK;
 
 namespace SpachEngine;
 
-public class SpachEngineWindow : MeowcleWindow
+public class SpachWindow : MeowcleWindow
 {
     private static readonly Vector3[] COLORS = new[]
     {
@@ -23,9 +23,12 @@ public class SpachEngineWindow : MeowcleWindow
     private int ulColor;
     private int ulModel;
     private int ulProjj;
+
+    protected Camera PlayerCamera;
     
-    public SpachEngineWindow()
+    public SpachWindow()
     {
+        PlayerCamera = new Camera(Vector3.Zero);
         for (int i = 0; i < players.Length; i++)
         {
             players[i] = new Player();
@@ -52,7 +55,7 @@ public class SpachEngineWindow : MeowcleWindow
     protected override void OnRenderFrame(double dt)
     {
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-        Matrix4 proj = Matrix4.CreateOrthographicOffCenter(-MeowcleAspectRatio, MeowcleAspectRatio, -1.0f, 1.0f, 1.0f, -1.0f);
+        Matrix4 proj = PlayerCamera.GetProjectionMatrix(MeowcleAspectRatio);
         GL.UniformMatrix4(ulProjj, true, ref proj);
         for (int i = 0; i < players.Length; i++) RenderPlayer(i);
     }

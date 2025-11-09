@@ -3,14 +3,16 @@ using SpachEngine;
 
 namespace Spachemin;
 
-public class Spachemin : SpachEngineWindow
+public class Spachemin : SpachWindow
 {
     private const float SPEED_PLAYER = 0.02f;
     private readonly SpacheNetClient? Net;
+    private int PlayerId;
     
     public Spachemin(SpacheNetClient? net)
     {
         Net = net;
+        if (Net != null) PlayerId = Net.PlayerId;
         Size = (700, 700);
         Title = "Spachemin";
     }
@@ -35,6 +37,7 @@ public class Spachemin : SpachEngineWindow
         Input inputLocal = new Input(KeyboardState);
         Input[] inputRemote = Step(inputLocal, Net);
         for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i]);
+        PlayerCamera.Position = players[PlayerId].Position;
     }
     
     private void ProcessInput(int id, Input input)
