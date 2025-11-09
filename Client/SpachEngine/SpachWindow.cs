@@ -57,21 +57,27 @@ public class SpachWindow : MeowcleWindow
             GL.UniformMatrix4(ulProjj, true, ref projj);
         }
 
-        for (int i = 0; i < gameObjects.Count; i++)
-        {
-            GameObject obj = gameObjects[i];
-            Mesh mesh = obj.mesh;
-            Texture tex = obj.texture;
-            Vector3 pos = obj.position;
-            Vector3 color = obj.color;
-            Matrix4 model = Matrix4.CreateTranslation(pos);
-            GL.UniformMatrix4(ulModel, true, ref model);
-            GL.Uniform3(ulColor, color);
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, tex.Handle);
-            GL.BindVertexArray(mesh.VAO);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, mesh.VertexLength);
-        }
+        for (int i = 0; i < gameObjects.Count; i++) RenderObject(gameObjects[i]);
+    }
+
+    private void RenderObject(GameObject obj)
+    {
+        Mesh mesh = obj.mesh;
+        Texture tex = obj.texture;
+        Vector3 pos = obj.position;
+        Vector3 rot = obj.rotation;
+        Vector3 color = obj.color;
+        Matrix4 model = Matrix4.Identity;
+        model *= Matrix4.CreateRotationZ(rot.Z);
+        model *= Matrix4.CreateRotationY(rot.Y);
+        model *= Matrix4.CreateRotationX(rot.X);
+        model *= Matrix4.CreateTranslation(pos);
+        GL.UniformMatrix4(ulModel, true, ref model);
+        GL.Uniform3(ulColor, color);
+        GL.ActiveTexture(TextureUnit.Texture0);
+        GL.BindTexture(TextureTarget.Texture2D, tex.Handle);
+        GL.BindVertexArray(mesh.VAO);
+        GL.DrawArrays(PrimitiveType.Triangles, 0, mesh.VertexLength);
     }
     
     protected override void OnUnloadGraphics()

@@ -69,17 +69,19 @@ public class Player : PhysicsObject
         prevMousePos = new Vector2(input.MouseX, input.MouseY);
         SetYaw(GetYaw() + (deltaX * lookSensitivity));
         SetPitch(GetPitch() - (deltaY * lookSensitivity));
+        rotation.Y = -yaw;
         
-        Vector3 forwardDelta = front * SPEED;
-        Vector3 rightDelta = right * SPEED;
-        Vector3 upDelta = up * SPEED;
+        Vector3 unitFront = new Vector3(front.X, 0.0f, front.Z).Normalized();
+        Vector3 unitRight = right.Normalized();
+        Vector3 unitUp = Vector3.UnitY;
         Vector3 force = Vector3.Zero;
-        if (input.F) force += forwardDelta;
-        if (input.B) force -= forwardDelta;
-        if (input.L) force -= rightDelta;
-        if (input.R) force += rightDelta;
-        if (input.U) force += upDelta;
-        if (input.D) force -= upDelta;
+        if (input.F) force += unitFront;
+        if (input.B) force -= unitFront;
+        if (input.L) force -= unitRight;
+        if (input.R) force += unitRight;
+        if (input.U) force += unitUp;
+        if (input.D) force -= unitUp;
+        if (force.Length != 0) force = force.Normalized() * SPEED;
         ApplyForce(force);
     }
 }

@@ -24,7 +24,7 @@ public class Spachemin : SpachWindow
     private Player localPlayer;
     
     private bool paused;
-    private bool thirdPerson;
+    private bool thirdPerson = true;
     private float cameraDistance = 1.0f;
     
     public Spachemin(SpacheNetClient _net)
@@ -74,14 +74,6 @@ public class Spachemin : SpachWindow
     
     protected override void OnUpdateFrame(double dt)
     {
-        UpdateLocalInput();
-        UpdateNetworkInput();
-        UpdatePhysics();
-        UpdateCamera();
-    }
-
-    private void UpdateLocalInput()
-    {
         if (KeyboardState.IsKeyPressed(Keys.P)) TogglePause();
         if (KeyboardState.IsKeyPressed(Keys.C)) ToggleThirdPerson();
 
@@ -92,10 +84,7 @@ public class Spachemin : SpachWindow
         const float fovIncrement = 10.0f;
         if (KeyboardState.IsKeyPressed(Keys.LeftBracket)) camera?.AddFov(-fovIncrement);
         if (KeyboardState.IsKeyPressed(Keys.RightBracket)) camera?.AddFov(fovIncrement);
-    }
-
-    private void UpdateNetworkInput()
-    {
+        
         Input inputLocal = new Input(KeyboardState, MouseState);
         Input[] inputRemote = Step(inputLocal);
         for (int i = 0; i < inputRemote.Length; i++)
@@ -104,43 +93,38 @@ public class Spachemin : SpachWindow
             if (input.Quit) Close();
             players[i].ProcessInput(input);
         }
-    }
-
-    private void UpdatePhysics()
-    {
-        for (int i = 0; i < gameObjects.Count; i++)
-        {
-            GameObject obj = gameObjects[i];
-            if (obj is PhysicsObject)
-            {
-                const float feetOffset = 0.1f;
-                PhysicsObject physObj = (PhysicsObject)obj;
-                float feet = physObj.position.Y - feetOffset;
-                Vector3 vel = physObj.velocity;
-                if (feet > groundLevel) physObj.ApplyForce(gravity);
-                else if (feet < groundLevel)
-                {
-                    if (vel.Y < 0) physObj.velocity.Y = 0;
-                    physObj.position.Y = groundLevel + feetOffset;
-                }
-                else
-                {
-                    const float cof = 0.25f;
-                    Vector3 frictionForce = new Vector3(-vel.X * cof, 0.0f, -vel.Z * cof);
-                    physObj.ApplyForce(frictionForce);
-                }
-                physObj.Update();
-            }
-        }
-    }
-
-    private void UpdateCamera()
-    {
+        
+        for (int i = 0; i < gameObjects.Count; i++) UpdateObject(gameObjects[i]);
+        
         Vector3 cameraOffset = Vector3.Zero;
         Vector3 front = localPlayer.GetFrontVector();
         Vector3 up = localPlayer.GetUpVector();
         if (thirdPerson) cameraOffset = front.Normalized() * -cameraDistance;
         camera?.Update(localPlayer.position + cameraOffset, front, up);
+    }
+
+    private void UpdateObject(GameObject obj)
+    {
+        if (obj is PhysicsObject)
+        {
+            const float feetOffset = 0.1f;
+            PhysicsObject physObj = (PhysicsObject)obj;
+            float feet = physObj.position.Y - feetOffset;
+            Vector3 vel = physObj.velocity;
+            if (feet > groundLevel) physObj.ApplyForce(gravity);
+            else if (feet < groundLevel)
+            {
+                if (vel.Y < 0) physObj.velocity.Y = 0;
+                physObj.position.Y = groundLevel + feetOffset;
+            }
+            else
+            {
+                const float cof = 0.25f;
+                Vector3 frictionForce = new Vector3(-vel.X * cof, 0.0f, -vel.Z * cof);
+                physObj.ApplyForce(frictionForce);
+            }
+            physObj.Update();
+        }
     }
         
     private Input[] Step(Input input)
