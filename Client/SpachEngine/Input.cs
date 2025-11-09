@@ -1,6 +1,6 @@
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace Spachemin;
+namespace SpachEngine;
 
 public struct Input
 {
