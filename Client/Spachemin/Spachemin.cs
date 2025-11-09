@@ -17,8 +17,8 @@ public class Spachemin : SpachWindow
     };
     
     private readonly SpacheNetClient net;
-    
-    protected Player[] players = new Player[4];
+
+    protected Player[] players;
     
     private bool paused;
     
@@ -44,7 +44,8 @@ public class Spachemin : SpachWindow
         
         Texture texPlayer = new Texture(pathTextures + "grid.png");
         Texture texGround = new Texture(pathTextures + "grid.png");
-        
+
+        players = new Player[net.PlayerCount];
         for (int i = 0; i < players.Length; i++)
         {
             players[i] = new Player(null, meshPlayer, texPlayer);
@@ -53,7 +54,7 @@ public class Spachemin : SpachWindow
         }
 
         camera = new Camera();
-        players[0].Camera = camera;
+        players[net.PlayerId].Camera = camera;
         
         GameObject ground = new GameObject(meshGround, texGround);
         ground.position = new Vector3(0.0f, -1.0f, 0.0f);
