@@ -6,6 +6,8 @@ namespace Spachemin;
 
 public class Utils
 {
+    private const float SPEED_PLAYER = 0.02f;
+    
     public static byte[] EncodeInput(Input _data)
     {
         bool[] bools = new []
@@ -70,18 +72,19 @@ public class Utils
     public static void ProcessInput(int id, Input input, ref Vector3[] players)
     {
         Vector3 position = players[id];
-        if (input.W) position.Y += Globals.SPEED_PLAYER;
-        if (input.A) position.X -= Globals.SPEED_PLAYER;
-        if (input.S) position.Y -= Globals.SPEED_PLAYER;
-        if (input.D) position.X += Globals.SPEED_PLAYER;
+        if (input.W) position.Y += SPEED_PLAYER;
+        if (input.A) position.X -= SPEED_PLAYER;
+        if (input.S) position.Y -= SPEED_PLAYER;
+        if (input.D) position.X += SPEED_PLAYER;
         players[id] = position;
     }
         
-    public static Input[] Step(Input input, SpacheNetClient net)
+    public static Input[] Step(Input input, SpacheNetClient? net)
     {
-        byte[][] matrix = net.Step(Utils.EncodeInput(input));
+        if (net == null) return new [] { input };
+        byte[][] matrix = net.Step(EncodeInput(input));
         Input[] output = new Input[matrix.Length];
-        for (int i = 0; i < matrix.Length; i++) output[i] = Utils.DecodeInput(matrix[i]);
+        for (int i = 0; i < matrix.Length; i++) output[i] = DecodeInput(matrix[i]);
         return output;
     }
 }

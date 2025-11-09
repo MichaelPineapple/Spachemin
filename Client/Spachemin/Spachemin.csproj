@@ -24,10 +24,6 @@
       <PackageReference Include="OpenTK" Version="4.9.4" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Assets\" />
-    </ItemGroup>
-
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
       <Exec Command="rm -r bin/Debug/net9.0/Assets&#xA;rm -r bin/Release/net9.0/Assets&#xA;cp -r Assets bin/Debug/net9.0/Assets&#xA;cp -r Assets bin/Release/net9.0/Assets" />
     </Target>

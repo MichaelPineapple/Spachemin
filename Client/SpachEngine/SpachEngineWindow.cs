@@ -6,28 +6,23 @@ namespace SpachEngine;
 
 public class SpachEngineWindow : MeowcleWindow
 {
-    private Shader ShaderDefault;
-    
-    private int playerVAO;
-    
+    private int shaderDefault;
+    private int vaoPlayer;
     private int ulColor;
     private int ulModel;
     private int ulProjj;
     
-    protected Vector3[] players = new Vector3[3];
-    protected readonly Vector3[] colors = new Vector3[10];
+    protected Vector3[] players;
+    protected Vector3[] colors;
     
     protected override void OnLoadGraphics()
     {
-        GL.UseProgram(ShaderDefault.Handle);
-
-        float[] playerMesh = SpachEngineUtils.CreateSquareMesh(0.1f);
-        playerVAO = SpachEngineUtils.CreateVAO(playerMesh, ShaderDefault.Handle);
-        GL.BindVertexArray(playerVAO);
+        GL.UseProgram(shaderDefault);
+        GL.BindVertexArray(vaoPlayer);
         
-        ulColor = GL.GetUniformLocation(ShaderDefault.Handle, "color");
-        ulModel = GL.GetUniformLocation(ShaderDefault.Handle, "model");
-        ulProjj = GL.GetUniformLocation(ShaderDefault.Handle, "projj");
+        ulColor = GL.GetUniformLocation(shaderDefault, "color");
+        ulModel = GL.GetUniformLocation(shaderDefault, "model");
+        ulProjj = GL.GetUniformLocation(shaderDefault, "projj");
     }
 
     protected override void OnRenderFrame(double dt)
@@ -40,7 +35,12 @@ public class SpachEngineWindow : MeowcleWindow
 
     protected void SetDefaultShader(Shader shader)
     {
-        ShaderDefault = shader;
+        shaderDefault = shader.Handle;
+    }
+
+    protected void SetPlayerMesh(Mesh mesh)
+    {
+        vaoPlayer = mesh.VAO;
     }
 
     private void RenderPlayer(int i)
@@ -55,6 +55,6 @@ public class SpachEngineWindow : MeowcleWindow
     
     protected override void OnUnloadGraphics()
     {
-        GL.DeleteProgram(ShaderDefault.Handle);
+        GL.DeleteProgram(shaderDefault);
     }
 }
