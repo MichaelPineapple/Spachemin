@@ -44,10 +44,10 @@ public class Spachemin : SpachWindow
         
         shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
         
-        Mesh meshPlayer = new Mesh(pathMeshes + "cube.mesh", shader);
-        Mesh meshGround = new Mesh(pathMeshes + "ground.mesh", shader);
+        Mesh meshPlayer = new Mesh(pathMeshes + "player.obj", shader);
+        Mesh meshGround = new Mesh(pathMeshes + "ground.obj", shader);
         
-        Texture texPlayer = new Texture(pathTextures + "grid.png");
+        Texture texPlayer = new Texture(pathTextures + "grid.png"); 
         Texture texGround = new Texture(pathTextures + "grid.png");
 
         players = new Player[net.PlayerCount];

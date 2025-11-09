@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 
 namespace SpachEngine;
 
@@ -9,19 +10,91 @@ public class Mesh
     
     public Mesh(string path, Shader shader)
     {
-        float[] mesh = ReadMeshData(path);
+        float[] mesh = ReadObjFile(path);
         VertexLength = mesh.Length;
         VAO = CreateVAO(mesh, shader.Handle);
     }
-
-    private static float[] ReadMeshData(string path)
+    
+    private static float[] ReadObjFile(string path)
     {
-        string data = File.ReadAllText(path);
-        data = data.Replace(" ", "").Replace("\t", "").Replace("\n", "");
-        string[] split = data.Split(',');
-        float[] output = new float[split.Length];
-        for (int i = 0; i < split.Length; i++) output[i] = float.Parse(split[i]);
-        return output;
+        // Reference: https://en.wikipedia.org/wiki/Wavefront_.obj_file
+        try
+        {
+            List<float> output = new List<float>();
+            List<Vector3> verticies = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            List<Vector2> texCoords = new List<Vector2>();
+            
+            void handleF(string str)
+            {
+                string[] split = str.Split('/');
+                int[] a = new int[3];
+                for (int i = 0; i < split.Length; i++) a[i] = int.Parse(split[i]) - 1;
+                Vector3 vertex = verticies[a[0]];
+                Vector2 tex = texCoords[a[1]];
+                Vector3 normal = normals[a[2]];
+                
+                for (int i = 0; i < 3; i++)
+                {
+                    float v = vertex[i];
+                    output.Add(v);
+                    Console.Write(v + ", ");
+                }
+
+                for (int i = 0; i < 2; i++)
+                {
+                    float t = tex[i];
+                    output.Add(t);
+                    Console.Write(t + ", ");
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    float n = normal[i];
+                    output.Add(n);
+                    Console.Write(n + ", ");
+                }
+                
+                Console.Write("\n");
+            }
+            
+            string[] data = File.ReadAllLines(path);
+            for (int i = 0; i < data.Length; i++)
+            {
+                string[] split = data[i].Split(' ');
+                switch (split[0])
+                {
+                    case "v":
+                        float vx = float.Parse(split[1]);
+                        float vy = float.Parse(split[2]);
+                        float vz = float.Parse(split[3]);
+                        verticies.Add(new Vector3(vx, vy, vz));
+                        break;
+                    case "vn":
+                        float nx = float.Parse(split[1]);
+                        float ny = float.Parse(split[2]);
+                        float nz = float.Parse(split[3]);
+                        normals.Add(new Vector3(nx, ny, nz));
+                        break;
+                    case "vt":
+                        float tu = float.Parse(split[1]);
+                        float tv = float.Parse(split[2]);
+                        texCoords.Add(new Vector2(tu, tv));
+                        break;
+                    case "f":
+                        handleF(split[1]);
+                        handleF(split[2]);
+                        handleF(split[3]);
+                        break;
+                }
+            }
+            return output.ToArray();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Failed to load .obj file: " + path);
+            throw;
+        }
     }
     
     private static int CreateVAO(float[] mesh, int shader)
