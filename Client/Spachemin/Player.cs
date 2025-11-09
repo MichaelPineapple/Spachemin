@@ -5,10 +5,7 @@ namespace Spachemin;
 
 public class Player : PhysicsObject
 {
-    private const float SPEED = 0.01f;
-    private const float THIRD_PERSON_DISTANCE = -1.0f;
-
-    public Camera? camera;
+    private const float SPEED = 0.005f;
     
     private Vector3 front = Vector3.UnitZ;
     private Vector3 up = Vector3.UnitY;
@@ -19,12 +16,17 @@ public class Player : PhysicsObject
     
     private Vector2 prevMousePos = Vector2.Zero;
     private float lookSensitivity = 0.2f;
+    
+    public Player(Mesh _mesh, Texture _tex) : base(_mesh, _tex) { }
 
-    private bool thirdPerson;
-
-    public Player(Mesh _mesh, Texture _tex, Camera? _camera = null) : base(_mesh, _tex)
+    public Vector3 GetFrontVector()
     {
-        camera = _camera;
+        return front;
+    }
+
+    public Vector3 GetUpVector()
+    {
+        return up;
     }
     
     public float GetPitch()
@@ -59,33 +61,8 @@ public class Player : PhysicsObject
         right = Vector3.Normalize(Vector3.Cross(front, Vector3.UnitY));
         up = Vector3.Normalize(Vector3.Cross(right, front));
     }
-    
-    public void Update(Input input)
-    {
-        ProcessInput(input);
-        base.Update();
-        Vector3 cameraOffset = Vector3.Zero;
-        if (thirdPerson) cameraOffset = front.Normalized() * THIRD_PERSON_DISTANCE;
-        camera?.Update(position + cameraOffset, front, up);
-    }
 
-    public void GoThirdPerson()
-    {
-        thirdPerson = true;
-    }
-
-    public void GoFirstPerson()
-    {
-        thirdPerson = false;
-    }
-
-    public void ToggleThirdPerson()
-    {
-        if (thirdPerson) GoFirstPerson();
-        else GoThirdPerson();
-    }
-
-    private void ProcessInput(Input input)
+    public void ProcessInput(Input input)
     {
         float deltaX = input.MouseX - prevMousePos.X;
         float deltaY = input.MouseY - prevMousePos.Y;

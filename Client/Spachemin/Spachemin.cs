@@ -10,16 +10,22 @@ public class Spachemin : SpachWindow
 {
     private static readonly Vector3[] COLORS = new[]
     {
-        new Vector3(1.0f, 1.0f, 1.0f),
         new Vector3(1.0f, 0.0f, 0.0f),
         new Vector3(0.0f, 0.0f, 1.0f),
-        new Vector3(0.0f, 0.0f, 1.0f),
+        new Vector3(0.0f, 1.0f, 0.0f),
+        new Vector3(0.0f, 0.0f, 0.0f),
     };
+
+    private Vector3 gravity = new Vector3(0.0f, -0.0001f, 0.0f);
+    private float groundLevel = -1.0f;
     
     private readonly SpacheNetClient net;
     private Player[] players;
     private Player localPlayer;
+    
     private bool paused;
+    private bool thirdPerson;
+    private float cameraDistance = 1.0f;
     
     public Spachemin(SpacheNetClient _net)
     {
@@ -54,10 +60,9 @@ public class Spachemin : SpachWindow
         localPlayer = players[net.PlayerId];
 
         camera = new Camera();
-        localPlayer.camera = camera;
         
         GameObject ground = new GameObject(meshGround, texGround);
-        ground.position = new Vector3(0.0f, -1.0f, 0.0f);
+        ground.position = new Vector3(0.0f, groundLevel, 0.0f);
         gameObjects.Add(ground);
         
         lightAmbient = new Vector3(0.25f, 0.25f, 0.25f);
@@ -69,17 +74,73 @@ public class Spachemin : SpachWindow
     
     protected override void OnUpdateFrame(double dt)
     {
+        UpdateLocalInput();
+        UpdateNetworkInput();
+        UpdatePhysics();
+        UpdateCamera();
+    }
+
+    private void UpdateLocalInput()
+    {
         if (KeyboardState.IsKeyPressed(Keys.P)) TogglePause();
-        if (KeyboardState.IsKeyPressed(Keys.C)) localPlayer.ToggleThirdPerson();
-        
+        if (KeyboardState.IsKeyPressed(Keys.C)) ToggleThirdPerson();
+
+        const float cameraDistanceIncrement = 0.1f;
+        if (KeyboardState.IsKeyPressed(Keys.Equal)) cameraDistance -= cameraDistanceIncrement;
+        if (KeyboardState.IsKeyPressed(Keys.Minus)) cameraDistance += cameraDistanceIncrement;
+
+        const float fovIncrement = 10.0f;
+        if (KeyboardState.IsKeyPressed(Keys.LeftBracket)) camera?.AddFov(-fovIncrement);
+        if (KeyboardState.IsKeyPressed(Keys.RightBracket)) camera?.AddFov(fovIncrement);
+    }
+
+    private void UpdateNetworkInput()
+    {
         Input inputLocal = new Input(KeyboardState, MouseState);
         Input[] inputRemote = Step(inputLocal);
         for (int i = 0; i < inputRemote.Length; i++)
         {
             Input input = inputRemote[i];
             if (input.Quit) Close();
-            players[i].Update(input);
+            players[i].ProcessInput(input);
         }
+    }
+
+    private void UpdatePhysics()
+    {
+        for (int i = 0; i < gameObjects.Count; i++)
+        {
+            GameObject obj = gameObjects[i];
+            if (obj is PhysicsObject)
+            {
+                const float feetOffset = 0.1f;
+                PhysicsObject physObj = (PhysicsObject)obj;
+                float feet = physObj.position.Y - feetOffset;
+                Vector3 vel = physObj.velocity;
+                if (feet > groundLevel) physObj.ApplyForce(gravity);
+                else if (feet < groundLevel)
+                {
+                    if (vel.Y < 0) physObj.velocity.Y = 0;
+                    physObj.position.Y = groundLevel + feetOffset;
+                }
+                else
+                {
+                    const float cof = 0.25f;
+                    Vector3 frictionForce = new Vector3(-vel.X * cof, 0.0f, -vel.Z * cof);
+                    physObj.ApplyForce(frictionForce);
+                }
+                physObj.Update();
+            }
+        }
+    }
+
+    private void UpdateCamera()
+    {
+        Vector3 cameraOffset = Vector3.Zero;
+        Vector3 front = localPlayer.GetFrontVector();
+        Vector3 up = localPlayer.GetUpVector();
+        if (thirdPerson) cameraOffset = front.Normalized() * -cameraDistance;
+        camera?.Update(localPlayer.position + cameraOffset, front, up);
     }
         
     private Input[] Step(Input input)
@@ -88,6 +149,22 @@ public class Spachemin : SpachWindow
         Input[] output = new Input[matrix.Length];
         for (int i = 0; i < matrix.Length; i++) output[i] = new Input(matrix[i]);
         return output;
+    }
+    
+    public void GoThirdPerson()
+    {
+        thirdPerson = true;
+    }
+
+    public void GoFirstPerson()
+    {
+        thirdPerson = false;
+    }
+
+    public void ToggleThirdPerson()
+    {
+        if (thirdPerson) GoFirstPerson();
+        else GoThirdPerson();
     }
     
     private void TogglePause()
