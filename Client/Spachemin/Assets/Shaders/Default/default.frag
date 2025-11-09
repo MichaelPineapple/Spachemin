@@ -6,10 +6,13 @@ in vec3 _fragPos;
 
 uniform sampler2D texture0;
 uniform vec3 color;
+uniform vec3 lightAmb;
 
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = texture(texture0, _tex) * vec4(color, 1.0);
+    vec3 light = lightAmb;
+    vec3 shade = light * color;
+    FragColor = texture(texture0, _tex) * vec4(shade, 1.0);
 }

@@ -17,6 +17,8 @@ public class SpachWindow : MeowcleWindow
     };
     
     protected Player[] players = new Player[4];
+
+    private Vector3 LightAmbient = new Vector3(0.5f, 0.5f, 0.5f);
     
     private int shaderDefault;
     
@@ -27,6 +29,7 @@ public class SpachWindow : MeowcleWindow
     private int ulVieww;
     private int ulProjj;
     private int ulColor;
+    private int ulLightAmb;
 
     protected Camera PlayerCamera;
     
@@ -54,6 +57,10 @@ public class SpachWindow : MeowcleWindow
         ulModel = GL.GetUniformLocation(shaderDefault, "model");
         ulVieww = GL.GetUniformLocation(shaderDefault, "vieww");
         ulProjj = GL.GetUniformLocation(shaderDefault, "projj");
+        
+        ulLightAmb = GL.GetUniformLocation(shaderDefault, "lightAmb");
+        GL.Uniform3(ulLightAmb, LightAmbient);
+
     }
 
     protected override void OnRenderFrame(double dt)
