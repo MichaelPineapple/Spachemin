@@ -1,12 +1,16 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using SpacheNet;
 using SpachEngine.MeowcleTK;
 
 namespace SpachEngine;
 
 public class SpachWindow : MeowcleWindow
 {
+    private readonly SpacheNetClient Net;
+    
     private static readonly Vector3[] COLORS = new[]
     {
         new Vector3(1.0f, 1.0f, 1.0f),
@@ -31,11 +35,13 @@ public class SpachWindow : MeowcleWindow
     private int ulLightAmb;
     private int ulLightDirDir;
     private int ulLightDirColor;
-
-    protected int PlayerID;
     
-    public SpachWindow()
+    private bool Paused;
+    
+    public SpachWindow(SpacheNetClient net)
     {
+        Net = net;
+        
         for (int i = 0; i < Players.Length; i++)
         {
             Players[i] = new Player();
@@ -66,12 +72,23 @@ public class SpachWindow : MeowcleWindow
         GL.Uniform3(ulLightDirDir, new Vector3(0.5f, -1.0f, 0.0f));
         GL.Uniform3(ulLightDirColor, new Vector3(0.75f, 0.75f, 0.75f));
     }
+    
+    protected override void OnUpdateFrame(double dt)
+    {
+        if (KeyboardState.IsKeyPressed(Keys.P)) TogglePause();
+        Input inputLocal = new Input(KeyboardState, MouseState);
+        Input[] inputRemote = Step(inputLocal, Net);
+        for (int i = 0; i < inputRemote.Length; i++)
+        {
+            if (Players[i].OnUpdate(inputRemote[i])) Close();
+        }
+    }
 
     protected override void OnRenderFrame(double dt)
     {
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-        Player me = Players[PlayerID];
+        Player me = Players[Net.PlayerId];
         Matrix4 vieww = me.GetViewMatrix();
         Matrix4 projj = me.GetProjectionMatrix(MeowcleAspectRatio);
         GL.UniformMatrix4(ulVieww, true, ref vieww);
@@ -97,6 +114,32 @@ public class SpachWindow : MeowcleWindow
     {
         MeshGround = mesh;
         texGround = tex.Handle;
+    }
+    
+    private void TogglePause()
+    {
+        if (Paused) Unpause();
+        else Pause();
+    }
+    
+    private void Pause()
+    {
+        this.CursorState = CursorState.Normal;
+        Paused = true;
+    }
+
+    private void Unpause()
+    {
+        this.CursorState = CursorState.Grabbed;
+        Paused = false;
+    }
+
+    private static Input[] Step(Input input, SpacheNetClient net)
+    {
+        byte[][] matrix = net.Step(input.ToBytes());
+        Input[] output = new Input[matrix.Length];
+        for (int i = 0; i < matrix.Length; i++) output[i] = new Input(matrix[i]);
+        return output;
     }
     
     private void RenderGround()
