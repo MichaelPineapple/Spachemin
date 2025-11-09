@@ -5,36 +5,40 @@ namespace SpachEngine;
 public struct Input
 {
     public readonly bool Quit;
-    public readonly bool W, A, S, D;
+    public readonly bool F, B, L, R, U, D;
 
     public Input()
     {
         Quit = false;
-        W = A = S = D = false;
+        F = B = L = R = U = D = false;
     }
     
     public Input(KeyboardState keyboard)
     {
         Quit = keyboard.IsKeyDown(Keys.Escape);
-        W = keyboard.IsKeyDown(Keys.W);
-        A = keyboard.IsKeyDown(Keys.A);
-        S = keyboard.IsKeyDown(Keys.S);
-        D = keyboard.IsKeyDown(Keys.D);
+        F = keyboard.IsKeyDown(Keys.W);
+        L = keyboard.IsKeyDown(Keys.A);
+        B = keyboard.IsKeyDown(Keys.S);
+        R = keyboard.IsKeyDown(Keys.D);
+        U = keyboard.IsKeyDown(Keys.Space);
+        D = keyboard.IsKeyDown(Keys.LeftControl);
     }
     
     public Input(byte[] data)
     {
         bool[] bools = ByteToBools(data[0]);
         Quit = bools[0];
-        W = bools[1];
-        A = bools[2];
-        S = bools[3];
-        D = bools[4];
+        F = bools[1];
+        B = bools[2];
+        L = bools[3];
+        R = bools[4];
+        U = bools[5];
+        D = bools[6];
     }
 
     public byte[] ToBytes()
     {
-        bool[] bools = new [] { Quit, W, A, S, D };
+        bool[] bools = new [] { Quit, F, B, L, R, U, D };
         return new[] { ByteFromBools(bools) };
     }
     

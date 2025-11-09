@@ -39,6 +39,7 @@ public class SpachWindow : MeowcleWindow
         for (int i = 0; i < players.Length; i++)
         {
             players[i] = new Player();
+            players[i].Position = new Vector3(0.0f, 0.0f, -1.0f);
             players[i].Color = COLORS[i];
         }
     }
@@ -60,14 +61,17 @@ public class SpachWindow : MeowcleWindow
         
         ulLightAmb = GL.GetUniformLocation(shaderDefault, "lightAmb");
         GL.Uniform3(ulLightAmb, LightAmbient);
-
     }
 
     protected override void OnRenderFrame(double dt)
     {
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        
+        Matrix4 vieww = PlayerCamera.GetViewMatrix();
         Matrix4 projj = PlayerCamera.GetProjectionMatrix(MeowcleAspectRatio);
+        GL.UniformMatrix4(ulVieww, true, ref vieww);
         GL.UniformMatrix4(ulProjj, true, ref projj);
+        
         for (int i = 0; i < players.Length; i++) RenderPlayer(i);
     }
 
@@ -85,10 +89,8 @@ public class SpachWindow : MeowcleWindow
     private void RenderPlayer(int i)
     {
         Matrix4 model = Matrix4.CreateTranslation(players[i].Position);
-        Matrix4 vieww = Matrix4.Identity;
         
         GL.UniformMatrix4(ulModel, true, ref model);
-        GL.UniformMatrix4(ulVieww, true, ref vieww);
         GL.Uniform3(ulColor, players[i].Color);
         
         GL.ActiveTexture(TextureUnit.Texture0);
