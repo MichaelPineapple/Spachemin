@@ -4,9 +4,9 @@ namespace SpachEngine;
 
 public class Camera
 {
-    public Vector3 Position = Vector3.Zero;
-    public Vector3 Front = Vector3.UnitZ;
-    public Vector3 Up = Vector3.UnitY;
+    public Vector3 position = Vector3.Zero;
+    public Vector3 front = Vector3.UnitZ;
+    public Vector3 up = Vector3.UnitY;
     
     private float FOV = MathHelper.PiOver2;
     
@@ -25,10 +25,17 @@ public class Camera
     {
         SetFov(GetFov() + val);
     }
+
+    public void Update(Vector3 _pos, Vector3 _front, Vector3 _up)
+    {
+        position = _pos;
+        front = _front;
+        up = _up;
+    }
     
     internal Matrix4 GetViewMatrix()
     {
-        return Matrix4.LookAt(Position, Position + Front, Up);
+        return Matrix4.LookAt(position, position + front, up);
     }
 
     internal Matrix4 GetProjectionMatrix(float aspectRatio)

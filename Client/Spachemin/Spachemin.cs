@@ -17,9 +17,8 @@ public class Spachemin : SpachWindow
     };
     
     private readonly SpacheNetClient net;
-
-    protected Player[] players;
-    
+    private Player[] players;
+    private Player localPlayer;
     private bool paused;
     
     public Spachemin(SpacheNetClient _net)
@@ -48,13 +47,14 @@ public class Spachemin : SpachWindow
         players = new Player[net.PlayerCount];
         for (int i = 0; i < players.Length; i++)
         {
-            players[i] = new Player(null, meshPlayer, texPlayer);
+            players[i] = new Player(meshPlayer, texPlayer);
             players[i].color = COLORS[i];
             gameObjects.Add(players[i]);
         }
+        localPlayer = players[net.PlayerId];
 
         camera = new Camera();
-        players[net.PlayerId].Camera = camera;
+        localPlayer.camera = camera;
         
         GameObject ground = new GameObject(meshGround, texGround);
         ground.position = new Vector3(0.0f, -1.0f, 0.0f);
@@ -70,13 +70,15 @@ public class Spachemin : SpachWindow
     protected override void OnUpdateFrame(double dt)
     {
         if (KeyboardState.IsKeyPressed(Keys.P)) TogglePause();
+        if (KeyboardState.IsKeyPressed(Keys.C)) localPlayer.ToggleThirdPerson();
+        
         Input inputLocal = new Input(KeyboardState, MouseState);
         Input[] inputRemote = Step(inputLocal);
         for (int i = 0; i < inputRemote.Length; i++)
         {
             Input input = inputRemote[i];
             if (input.Quit) Close();
-            players[i].OnUpdate(input);
+            players[i].Update(input);
         }
     }
         

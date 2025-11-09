@@ -7,7 +7,7 @@ public struct Input
     public bool Quit;
     public bool F, B, L, R, U, D;
     public float MouseX, MouseY;
-
+    
     public Input()
     {
         Quit = false;

@@ -3,86 +3,106 @@ using SpachEngine;
 
 namespace Spachemin;
 
-public class Player : GameObject
+public class Player : PhysicsObject
 {
-    private const float SPEED = 0.025f;
+    private const float SPEED = 0.01f;
+    private const float THIRD_PERSON_DISTANCE = -1.0f;
 
-    public Camera? Camera;
+    public Camera? camera;
     
-    private Vector3 Front = Vector3.UnitZ;
-    private Vector3 Up = Vector3.UnitY;
-    private Vector3 Right = Vector3.UnitX;
+    private Vector3 front = Vector3.UnitZ;
+    private Vector3 up = Vector3.UnitY;
+    private Vector3 right = Vector3.UnitX;
     
-    private float Pitch;
-    private float Yaw = -MathHelper.PiOver2;
+    private float pitch;
+    private float yaw = -MathHelper.PiOver2;
     
-    private Vector2 PrevMousePos = Vector2.Zero;
-    private float LookSensitivity = 0.2f;
+    private Vector2 prevMousePos = Vector2.Zero;
+    private float lookSensitivity = 0.2f;
 
-    public Player(Camera? camera, Mesh mesh, Texture tex) : base(mesh, tex)
+    private bool thirdPerson;
+
+    public Player(Mesh _mesh, Texture _tex, Camera? _camera = null) : base(_mesh, _tex)
     {
-        Camera = camera;
+        camera = _camera;
     }
-
+    
     public float GetPitch()
     {
-        return MathHelper.RadiansToDegrees(Pitch);
+        return MathHelper.RadiansToDegrees(pitch);
     }
 
     public void SetPitch(float val)
     {
         float angle = MathHelper.Clamp(val, -89f, 89f);
-        Pitch = MathHelper.DegreesToRadians(angle);
+        pitch = MathHelper.DegreesToRadians(angle);
         UpdateVectors();
     }
         
     public float GetYaw()
     {
-        return MathHelper.RadiansToDegrees(Yaw);
+        return MathHelper.RadiansToDegrees(yaw);
     }
 
     public void SetYaw(float val)
     {
-        Yaw = MathHelper.DegreesToRadians(val);
+        yaw = MathHelper.DegreesToRadians(val);
         UpdateVectors();
     }
     
     private void UpdateVectors()
     {
-        Front.X = MathF.Cos(Pitch) * MathF.Cos(Yaw);
-        Front.Y = MathF.Sin(Pitch);
-        Front.Z = MathF.Cos(Pitch) * MathF.Sin(Yaw);
-        Front = Vector3.Normalize(Front);
-        Right = Vector3.Normalize(Vector3.Cross(Front, Vector3.UnitY));
-        Up = Vector3.Normalize(Vector3.Cross(Right, Front));
+        front.X = MathF.Cos(pitch) * MathF.Cos(yaw);
+        front.Y = MathF.Sin(pitch);
+        front.Z = MathF.Cos(pitch) * MathF.Sin(yaw);
+        front = Vector3.Normalize(front);
+        right = Vector3.Normalize(Vector3.Cross(front, Vector3.UnitY));
+        up = Vector3.Normalize(Vector3.Cross(right, front));
     }
     
-    public void OnUpdate(Input input)
+    public void Update(Input input)
     {
         ProcessInput(input);
-        if (Camera != null)
-        {
-            Camera.Position = position;
-            Camera.Front = Front;
-            Camera.Up = Up;
-        }
+        base.Update();
+        Vector3 cameraOffset = Vector3.Zero;
+        if (thirdPerson) cameraOffset = front.Normalized() * THIRD_PERSON_DISTANCE;
+        camera?.Update(position + cameraOffset, front, up);
+    }
+
+    public void GoThirdPerson()
+    {
+        thirdPerson = true;
+    }
+
+    public void GoFirstPerson()
+    {
+        thirdPerson = false;
+    }
+
+    public void ToggleThirdPerson()
+    {
+        if (thirdPerson) GoFirstPerson();
+        else GoThirdPerson();
     }
 
     private void ProcessInput(Input input)
     {
-        Vector3 forwardDelta = Front * SPEED;
-        Vector3 rightDelta = Right * SPEED;
-        Vector3 upDelta = Up * SPEED;
-        if (input.F) position += forwardDelta;
-        if (input.B) position -= forwardDelta;
-        if (input.L) position -= rightDelta;
-        if (input.R) position += rightDelta;
-        if (input.U) position += upDelta;
-        if (input.D) position -= upDelta;
-        float deltaX = input.MouseX - PrevMousePos.X;
-        float deltaY = input.MouseY - PrevMousePos.Y;
-        PrevMousePos = new Vector2(input.MouseX, input.MouseY);
-        SetYaw(GetYaw() + (deltaX * LookSensitivity));
-        SetPitch(GetPitch() - (deltaY * LookSensitivity));
+        float deltaX = input.MouseX - prevMousePos.X;
+        float deltaY = input.MouseY - prevMousePos.Y;
+        prevMousePos = new Vector2(input.MouseX, input.MouseY);
+        SetYaw(GetYaw() + (deltaX * lookSensitivity));
+        SetPitch(GetPitch() - (deltaY * lookSensitivity));
+        
+        Vector3 forwardDelta = front * SPEED;
+        Vector3 rightDelta = right * SPEED;
+        Vector3 upDelta = up * SPEED;
+        Vector3 force = Vector3.Zero;
+        if (input.F) force += forwardDelta;
+        if (input.B) force -= forwardDelta;
+        if (input.L) force -= rightDelta;
+        if (input.R) force += rightDelta;
+        if (input.U) force += upDelta;
+        if (input.D) force -= upDelta;
+        ApplyForce(force);
     }
 }
