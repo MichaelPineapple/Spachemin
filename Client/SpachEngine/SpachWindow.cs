@@ -20,9 +20,10 @@ public class SpachWindow : MeowcleWindow
     
     private int shaderDefault;
     private int vaoPlayer;
-    private int ulColor;
     private int ulModel;
+    private int ulVieww;
     private int ulProjj;
+    private int ulColor;
 
     protected Camera PlayerCamera;
     
@@ -40,8 +41,7 @@ public class SpachWindow : MeowcleWindow
     {
         GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
-        GL.Enable(EnableCap.CullFace);
-        GL.CullFace(TriangleFace.Back);
+        GL.Enable(EnableCap.CullFace); 
         this.CursorState = CursorState.Normal;
         
         GL.UseProgram(shaderDefault);
@@ -49,14 +49,15 @@ public class SpachWindow : MeowcleWindow
         
         ulColor = GL.GetUniformLocation(shaderDefault, "color");
         ulModel = GL.GetUniformLocation(shaderDefault, "model");
+        ulVieww = GL.GetUniformLocation(shaderDefault, "vieww");
         ulProjj = GL.GetUniformLocation(shaderDefault, "projj");
     }
 
     protected override void OnRenderFrame(double dt)
     {
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-        Matrix4 proj = PlayerCamera.GetProjectionMatrix(MeowcleAspectRatio);
-        GL.UniformMatrix4(ulProjj, true, ref proj);
+        Matrix4 projj = PlayerCamera.GetProjectionMatrix(MeowcleAspectRatio);
+        GL.UniformMatrix4(ulProjj, true, ref projj);
         for (int i = 0; i < players.Length; i++) RenderPlayer(i);
     }
 
@@ -73,7 +74,9 @@ public class SpachWindow : MeowcleWindow
     private void RenderPlayer(int i)
     {
         Matrix4 model = Matrix4.CreateTranslation(players[i].Position);
+        Matrix4 vieww = Matrix4.Identity;
         GL.UniformMatrix4(ulModel, true, ref model);
+        GL.UniformMatrix4(ulVieww, true, ref vieww);
         GL.Uniform3(ulColor, players[i].Color);
         GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
     }

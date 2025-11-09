@@ -21,8 +21,8 @@ public class Spachemin : SpachWindow
         string pathShaders = pathApp + "Shaders/";
         string pathMeshes = pathApp + "Meshes/";
         
-        Shader shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
-        Mesh playerMesh = new Mesh(pathMeshes + "square.mesh", shader);
+        Shader shader = new Shader(pathShaders + "Default3D/default.vert", pathShaders + "Default3D/default.frag");
+        Mesh playerMesh = new Mesh(pathMeshes + "cube.mesh", shader);
         
         SetDefaultShader(shader);
         SetPlayerMesh(playerMesh);
