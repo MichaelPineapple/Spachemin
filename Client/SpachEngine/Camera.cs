@@ -4,25 +4,29 @@ namespace SpachEngine;
 
 public class Camera
 {
-    //private const float SPEED = 1.0f;
+    public Vector3 Position = Vector3.Zero;
     
-    public  Vector3 Position;
-    
-    private Vector3 Front = -Vector3.UnitZ;
-    private Vector3 Up = Vector3.UnitY;
-    private Vector3 Right = Vector3.UnitX;
-    //private Vector2 PrevMousePos = Vector2.Zero;
+    public Vector3 Front = Vector3.UnitZ;
+    public Vector3 Up = Vector3.UnitY;
+    public Vector3 Right = Vector3.UnitX;
     
     private float Pitch;
     private float Yaw = -MathHelper.PiOver2;
     private float FOV = MathHelper.PiOver2;
-    //private float Sensitivity = 0.2f;
-    
-    //private bool FirstMove = true;
-    
-    public Camera(Vector3 position)
+
+    public Vector3 GetFront()
     {
-        Position = position;
+        return this.Front;
+    }
+
+    public Vector3 GetUp()
+    {
+        return this.Up;
+    }
+
+    public Vector3 GetRight()
+    {
+        return this.Right;
     }
     
     public float GetFov()
@@ -36,11 +40,11 @@ public class Camera
         FOV = MathHelper.DegreesToRadians(angle);
     }
 
-    public void addFov(float val)
+    public void AddFov(float val)
     {
         SetFov(GetFov() + val);
     }
-
+    
     public float GetPitch()
     {
         return MathHelper.RadiansToDegrees(Pitch);
@@ -63,7 +67,7 @@ public class Camera
         Yaw = MathHelper.DegreesToRadians(val);
         UpdateVectors();
     }
-
+    
     internal Matrix4 GetViewMatrix()
     {
         return Matrix4.LookAt(Position, Position + Front, Up);
@@ -73,7 +77,7 @@ public class Camera
     {
         return Matrix4.CreatePerspectiveFieldOfView(FOV, aspectRatio, 0.01f, 100f);
     }
-        
+    
     private void UpdateVectors()
     {
         Front.X = MathF.Cos(Pitch) * MathF.Cos(Yaw);
@@ -83,31 +87,4 @@ public class Camera
         Right = Vector3.Normalize(Vector3.Cross(Front, Vector3.UnitY));
         Up = Vector3.Normalize(Vector3.Cross(Right, Front));
     }
-    
-    // public void OnUpdate(Input input)
-    // {
-    //     Vector3 forwardDelta = Front * SPEED;
-    //     Vector3 rightDelta = Right * SPEED;
-    //     Vector3 upDelta = Up * SPEED;
-    //     if (input.F) Position += forwardDelta;
-    //     if (input.B) Position -= forwardDelta;
-    //     if (input.L) Position -= rightDelta;
-    //     if (input.R) Position += rightDelta;
-    //     if (input.U) Position += upDelta;
-    //     if (input.D) Position -= upDelta;
-    //     
-    //     if (FirstMove) 
-    //     {
-    //         PrevMousePos = new Vector2(input.MouseX, input.MouseY);
-    //         FirstMove = false;
-    //     }
-    //     else
-    //     {
-    //         float deltaX = input.MouseX - PrevMousePos.X;
-    //         float deltaY = input.MouseY - PrevMousePos.Y;
-    //         PrevMousePos = new Vector2(input.MouseX, input.MouseY);
-    //         SetYaw(GetYaw() + (deltaX * Sensitivity));
-    //         SetPitch(GetPitch() - (deltaY * Sensitivity));
-    //     }
-    // }
 }

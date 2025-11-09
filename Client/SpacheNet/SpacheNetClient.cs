@@ -7,7 +7,7 @@ public class SpacheNetClient
     private const string IP_LOCALHOST = "127.0.0.1";
     private const int PORT_DEFAULT = 9001;
     private const byte LOGIN_KEY = 69;
-    public const int MAX_DATA = 3;
+    public const int MAX_DATA = 10;
     
     private Stream? stream;
     private TcpClient? client;

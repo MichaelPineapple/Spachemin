@@ -1,7 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
-using Spachemin;
 using SpachEngine.MeowcleTK;
 
 namespace SpachEngine;
@@ -16,13 +15,13 @@ public class SpachWindow : MeowcleWindow
         new Vector3(0.0f, 0.0f, 1.0f),
     };
     
-    protected Player[] players = new Player[4];
+    protected Player[] Players = new Player[4];
+    private Mesh MeshPlayer;
 
     private Vector3 LightAmbient = new Vector3(0.5f, 0.5f, 0.5f);
     
     private int shaderDefault;
     
-    private int vaoPlayer;
     private int texPlayer;
     
     private int ulModel;
@@ -31,16 +30,14 @@ public class SpachWindow : MeowcleWindow
     private int ulColor;
     private int ulLightAmb;
 
-    protected Camera PlayerCamera;
+    protected int PlayerID;
     
     public SpachWindow()
     {
-        PlayerCamera = new Camera(Vector3.Zero);
-        for (int i = 0; i < players.Length; i++)
+        for (int i = 0; i < Players.Length; i++)
         {
-            players[i] = new Player();
-            players[i].Position = new Vector3(0.0f, 0.0f, -1.0f);
-            players[i].Color = COLORS[i];
+            Players[i] = new Player();
+            Players[i].Color = COLORS[i];
         }
     }
     
@@ -49,10 +46,10 @@ public class SpachWindow : MeowcleWindow
         GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace); 
-        this.CursorState = CursorState.Normal;
+        GL.CullFace(TriangleFace.Back);
+        this.CursorState = CursorState.Grabbed;
         
         GL.UseProgram(shaderDefault);
-        GL.BindVertexArray(vaoPlayer);
         
         ulColor = GL.GetUniformLocation(shaderDefault, "color");
         ulModel = GL.GetUniformLocation(shaderDefault, "model");
@@ -66,13 +63,14 @@ public class SpachWindow : MeowcleWindow
     protected override void OnRenderFrame(double dt)
     {
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-        
-        Matrix4 vieww = PlayerCamera.GetViewMatrix();
-        Matrix4 projj = PlayerCamera.GetProjectionMatrix(MeowcleAspectRatio);
+
+        Player me = Players[PlayerID];
+        Matrix4 vieww = me.GetViewMatrix();
+        Matrix4 projj = me.GetProjectionMatrix(MeowcleAspectRatio);
         GL.UniformMatrix4(ulVieww, true, ref vieww);
         GL.UniformMatrix4(ulProjj, true, ref projj);
         
-        for (int i = 0; i < players.Length; i++) RenderPlayer(i);
+        for (int i = 0; i < Players.Length; i++) RenderPlayer(Players[i]);
     }
 
     protected void SetDefaultShader(Shader shader)
@@ -82,21 +80,19 @@ public class SpachWindow : MeowcleWindow
 
     protected void SetPlayerMesh(Mesh mesh, Texture tex)
     {
-        vaoPlayer = mesh.VAO;
+        MeshPlayer = mesh;
         texPlayer = tex.Handle;
     }
 
-    private void RenderPlayer(int i)
+    private void RenderPlayer(Player p)
     {
-        Matrix4 model = Matrix4.CreateTranslation(players[i].Position);
-        
+        Matrix4 model = Matrix4.CreateTranslation(p.Position);
         GL.UniformMatrix4(ulModel, true, ref model);
-        GL.Uniform3(ulColor, players[i].Color);
-        
+        GL.Uniform3(ulColor, p.Color);
         GL.ActiveTexture(TextureUnit.Texture0);
         GL.BindTexture(TextureTarget.Texture2D, texPlayer);
-        
-        GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+        GL.BindVertexArray(MeshPlayer.VAO);
+        GL.DrawArrays(PrimitiveType.Triangles, 0, MeshPlayer.VertexLength);
     }
     
     protected override void OnUnloadGraphics()

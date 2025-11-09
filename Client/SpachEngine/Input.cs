@@ -4,16 +4,18 @@ namespace SpachEngine;
 
 public struct Input
 {
-    public readonly bool Quit;
-    public readonly bool F, B, L, R, U, D;
+    public bool Quit;
+    public bool F, B, L, R, U, D;
+    public float MouseX, MouseY;
 
     public Input()
     {
         Quit = false;
         F = B = L = R = U = D = false;
+        MouseX = MouseY = 0.0f;
     }
     
-    public Input(KeyboardState keyboard)
+    public Input(KeyboardState keyboard, MouseState mouse)
     {
         Quit = keyboard.IsKeyDown(Keys.Escape);
         F = keyboard.IsKeyDown(Keys.W);
@@ -22,11 +24,14 @@ public struct Input
         R = keyboard.IsKeyDown(Keys.D);
         U = keyboard.IsKeyDown(Keys.Space);
         D = keyboard.IsKeyDown(Keys.LeftControl);
+        MouseX = mouse.X;
+        MouseY = mouse.Y;
     }
     
     public Input(byte[] data)
     {
         bool[] bools = ByteToBools(data[0]);
+        
         Quit = bools[0];
         F = bools[1];
         B = bools[2];
@@ -34,12 +39,41 @@ public struct Input
         R = bools[4];
         U = bools[5];
         D = bools[6];
+        
+        byte[] xb = new byte[4];
+        byte[] yb = new byte[4];
+        
+        int j = 1;
+        for (int i = 0; i < 4; i++)
+        {
+            xb[i] = data[j];
+            yb[i] = data[j + 4];
+            j++;
+        }
+        
+        MouseX = BitConverter.ToSingle(xb);
+        MouseY = BitConverter.ToSingle(yb);
     }
 
     public byte[] ToBytes()
     {
-        bool[] bools = new [] { Quit, F, B, L, R, U, D };
-        return new[] { ByteFromBools(bools) };
+        byte b = ByteFromBools(new [] { Quit, F, B, L, R, U, D });
+        
+        byte[] xb = BitConverter.GetBytes(MouseX);
+        byte[] yb = BitConverter.GetBytes(MouseY);
+        
+        byte[] output = new byte[9];
+        output[0] = b;
+        
+        int j = 1;
+        for (int i = 0; i < 4; i++)
+        {
+            output[j] = xb[i];
+            output[j + 4] = yb[i];
+            j++;
+        }
+        
+        return output;
     }
     
     private static byte ByteFromBools(bool[] bools)

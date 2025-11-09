@@ -1,5 +1,5 @@
 #define MAX_FRAMES 100
-#define MAX_DATA 3
+#define MAX_DATA 10
 #define MAX_PLAYERS 3
 
 typedef struct

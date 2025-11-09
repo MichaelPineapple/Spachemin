@@ -5,10 +5,12 @@ namespace SpachEngine;
 public class Mesh
 {
     internal int VAO { get; private set; }
+    internal int VertexLength;
     
     public Mesh(string path, Shader shader)
     {
         float[] mesh = ReadMeshData(path);
+        VertexLength = mesh.Length;
         VAO = CreateVAO(mesh, shader.Handle);
     }
 

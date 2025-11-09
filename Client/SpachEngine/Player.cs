@@ -1,15 +1,48 @@
 using OpenTK.Mathematics;
 
-namespace Spachemin;
+namespace SpachEngine;
 
-public struct Player
+public class Player : Camera
 {
-    public Vector3 Position;
-    public Vector3 Color;
+    private const float SPEED = 0.01f;
+    public Vector3 Color = Vector3.One;
+    private Vector2 PrevMousePos = Vector2.Zero;
+    private float LookSensitivity = 0.2f;
+    private bool FirstMove = true;
 
-    public Player()
+    public bool OnUpdate(Input input)
     {
-        Position = Vector3.Zero;
-        Color = Vector3.One;
+        return ProcessInput(input);
+    }
+
+    private bool ProcessInput(Input input)
+    {
+        if (input.Quit) return true;
+        
+        Vector3 forwardDelta = Front * SPEED;
+        Vector3 rightDelta = Right * SPEED;
+        Vector3 upDelta = Up * SPEED;
+        if (input.F) Position += forwardDelta;
+        if (input.B) Position -= forwardDelta;
+        if (input.L) Position -= rightDelta;
+        if (input.R) Position += rightDelta;
+        if (input.U) Position += upDelta;
+        if (input.D) Position -= upDelta;
+        
+        if (FirstMove) 
+        {
+            PrevMousePos = new Vector2(input.MouseX, input.MouseY);
+            FirstMove = false;
+        }
+        else
+        {
+            float deltaX = input.MouseX - PrevMousePos.X;
+            float deltaY = input.MouseY - PrevMousePos.Y;
+            PrevMousePos = new Vector2(input.MouseX, input.MouseY);
+            SetYaw(GetYaw() + (deltaX * LookSensitivity));
+            SetPitch(GetPitch() - (deltaY * LookSensitivity));
+        }
+
+        return false;
     }
 }
