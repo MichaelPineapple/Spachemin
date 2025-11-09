@@ -1,5 +1,4 @@
 using OpenTK.Mathematics;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using SpacheNet;
 using SpachEngine;
 
@@ -44,15 +43,15 @@ public class Spachemin : SpachEngineWindow
 
     protected override void OnUpdateFrame(double dt)
     {
-        if (KeyboardState.IsKeyDown(Keys.Escape)) Close();
         Input inputLocal = new Input(KeyboardState);
         Input[] inputRemote = Step(inputLocal, Net);
-        for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i], ref players);
+        for (int i = 0; i < inputRemote.Length; i++) ProcessInput(i, inputRemote[i]);
     }
     
-    public static void ProcessInput(int id, Input input, ref Vector3[] players)
+    private void ProcessInput(int id, Input input)
     {
         Vector3 position = players[id];
+        if (input.Quit) Close();
         if (input.W) position.Y += SPEED_PLAYER;
         if (input.A) position.X -= SPEED_PLAYER;
         if (input.S) position.Y -= SPEED_PLAYER;
@@ -62,7 +61,7 @@ public class Spachemin : SpachEngineWindow
         
     private static Input[] Step(Input input, SpacheNetClient? net)
     {
-        if (net == null) return new [] { input };
+        if (net == null) return new [] { new Input(input.ToBytes()) };
         byte[][] matrix = net.Step(input.ToBytes());
         Input[] output = new Input[matrix.Length];
         for (int i = 0; i < matrix.Length; i++) output[i] = new Input(matrix[i]);

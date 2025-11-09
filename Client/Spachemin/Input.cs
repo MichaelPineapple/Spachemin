@@ -4,15 +4,18 @@ namespace Spachemin;
 
 public struct Input
 {
+    public readonly bool Quit;
     public readonly bool W, A, S, D;
 
     public Input()
     {
+        Quit = false;
         W = A = S = D = false;
     }
     
     public Input(KeyboardState keyboard)
     {
+        Quit = keyboard.IsKeyDown(Keys.Escape);
         W = keyboard.IsKeyDown(Keys.W);
         A = keyboard.IsKeyDown(Keys.A);
         S = keyboard.IsKeyDown(Keys.S);
@@ -22,15 +25,16 @@ public struct Input
     public Input(byte[] data)
     {
         bool[] bools = ByteToBools(data[0]);
-        W = bools[0];
-        A = bools[1];
-        S = bools[2];
-        D = bools[3];
+        Quit = bools[0];
+        W = bools[1];
+        A = bools[2];
+        S = bools[3];
+        D = bools[4];
     }
 
     public byte[] ToBytes()
     {
-        bool[] bools = new [] { W, A, S, D };
+        bool[] bools = new [] { Quit, W, A, S, D };
         return new[] { ByteFromBools(bools) };
     }
     
