@@ -3,7 +3,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace SpachEngine.MeowcleTK;
+namespace SpachEngine.Layers.MeowcleTK;
 
 public class MeowcleWindow : MeowcleWinWindow
 {

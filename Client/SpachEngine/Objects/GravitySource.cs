@@ -1,6 +1,6 @@
 using OpenTK.Mathematics;
 
-namespace Spachemin;
+namespace SpachEngine.Objects;
 
 public class GravitySource
 {

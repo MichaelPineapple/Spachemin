@@ -66,7 +66,7 @@ public class Mesh
             }
             return output.ToArray();
         }
-        catch (Exception e)
+        catch
         {
             Console.WriteLine("Failed to load .obj file: " + path);
             throw;

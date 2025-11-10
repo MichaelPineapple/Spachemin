@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace SpachEngine.MeowcleTK;
+namespace SpachEngine.Layers.MeowcleTK;
 
 public unsafe class MeowcleWinWindow : NativeWindow
 {

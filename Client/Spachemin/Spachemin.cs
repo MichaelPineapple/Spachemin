@@ -7,7 +7,7 @@ using SpachEngine.Objects;
 
 namespace Spachemin;
 
-public class Spachemin : SpachWindow
+public class Spachemin : SpachEngineWindow
 {
     private static readonly Vector3[] COLORS = new[]
     {
@@ -18,9 +18,8 @@ public class Spachemin : SpachWindow
     };
     
     private readonly SpacheNetClient net;
-    private Player[] players;
-    private Player localPlayer;
-    private List<GravitySource> gravitySources = new List<GravitySource>();
+    private SpacheminPlayer[] players;
+    private SpacheminPlayer localPlayer;
     
     private bool paused;
     private Input pausedInput;
@@ -39,7 +38,7 @@ public class Spachemin : SpachWindow
         string pathMeshes = pathApp + "Meshes/";
         string pathTextures = pathApp + "Textures/";
         
-        shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
+        Shader shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
         
         Mesh meshPlayer = new Mesh(pathMeshes + "player.obj", shader);
         Mesh meshPlanet = new Mesh(pathMeshes + "sphere.obj", shader);
@@ -47,10 +46,10 @@ public class Spachemin : SpachWindow
         Texture texPlayer = new Texture(pathTextures + "grid.png"); 
         Texture texPlanet = new Texture(pathTextures + "grid.png");
 
-        players = new Player[net.playerCount];
+        players = new SpacheminPlayer[net.playerCount];
         for (int i = 0; i < players.Length; i++)
         {
-            players[i] = new Player(new Vector3(-2.0f, 0.0f, -2.0f), meshPlayer, texPlayer);
+            players[i] = new SpacheminPlayer(new Vector3(-2.0f, 0.0f, -2.0f), meshPlayer, texPlayer);
             players[i].color = COLORS[i];
             gameObjects.Add(players[i]);
         }
@@ -74,7 +73,7 @@ public class Spachemin : SpachWindow
         lightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
         lightDirectionalDirection = new Vector3(0.5f, -1.0f, 0.0f);
         
-        Load();
+        Load(shader);
     }
     
     protected override void OnUpdateFrame(double dt)
@@ -100,37 +99,13 @@ public class Spachemin : SpachWindow
             players[i].ProcessInput(input);
         }
         
-        for (int i = 0; i < gameObjects.Count; i++) UpdateObject(gameObjects[i]);
+        base.OnUpdateFrame(dt);
         
         Vector3 cameraOffset = Vector3.Zero;
         Vector3 front = localPlayer.GetFrontVector();
         Vector3 up = localPlayer.GetUpVector();
         if (thirdPerson) cameraOffset = front.Normalized() * -cameraDistance;
         camera?.Update(localPlayer.position + cameraOffset, front, up);
-    }
-
-    private void UpdateObject(GameObject obj)
-    {
-        if (obj is PhysicsObject)
-        {
-            PhysicsObject physObj = (PhysicsObject)obj;
-            Vector3 pos = physObj.position;
-
-            for (int i = 0; i < gravitySources.Count; i++)
-            {
-                GravitySource gravSrc = gravitySources[i];
-                Vector3 toSrc = gravSrc.position - pos;
-                float gravStrength = gravSrc.mass / (toSrc.Length * toSrc.Length);
-                Vector3 gravDirection = (toSrc.Length == 0) ? Vector3.Zero : toSrc.Normalized();
-                Vector3 gravity = gravDirection * gravStrength;
-            
-                const float planetRadius = 1.0f;
-                if (toSrc.Length > planetRadius) physObj.ApplyForce(gravity);
-                else physObj.velocity /= 2.0f;
-            }
-            
-            physObj.Update();
-        }
     }
         
     private Input[] Step(Input input)

@@ -1,17 +1,17 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using SpachEngine.MeowcleTK;
+using SpachEngine.Layers.MeowcleTK;
 using SpachEngine.Objects;
 
-namespace SpachEngine;
+namespace SpachEngine.Layers;
 
-public class SpachWindow : MeowcleWindow
+public class GraphicsLayer : MeowcleWindow
 {
     protected List<GameObject> gameObjects = new List<GameObject>();
-    
+
     public Camera? camera;
-    public Shader shader;
     
+    private int shaderHandle;
     private int ulModel;
     private int ulVieww;
     private int ulProjj;
@@ -23,15 +23,15 @@ public class SpachWindow : MeowcleWindow
     public Vector3 lightAmbient = Vector3.Zero;
     public Vector3 lightDirectional = Vector3.One;
     public Vector3 lightDirectionalDirection = Vector3.Zero;
-
-    protected void Load()
+    
+    protected void Load(Shader _shader)
     {
         GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace); 
         GL.CullFace(TriangleFace.Back);
 
-        int shaderHandle = shader.handle;
+        shaderHandle = _shader.handle;
         GL.UseProgram(shaderHandle);
         ulColor = GL.GetUniformLocation(shaderHandle, "color");
         ulModel = GL.GetUniformLocation(shaderHandle, "model");
@@ -61,7 +61,7 @@ public class SpachWindow : MeowcleWindow
 
         for (int i = 0; i < gameObjects.Count; i++) RenderObject(gameObjects[i]);
     }
-
+    
     private void RenderObject(GameObject obj)
     {
         Mesh mesh = obj.mesh;
@@ -84,6 +84,6 @@ public class SpachWindow : MeowcleWindow
     
     protected override void OnUnload()
     {
-        GL.DeleteProgram(shader.handle);
+        GL.DeleteProgram(shaderHandle);
     }
 }
