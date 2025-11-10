@@ -22,15 +22,15 @@ public class SpachWindow : MeowcleWindow
     public Vector3 lightAmbient = Vector3.Zero;
     public Vector3 lightDirectional = Vector3.One;
     public Vector3 lightDirectionalDirection = Vector3.Zero;
-    
-    protected override void OnLoadGraphics()
+
+    protected void Load()
     {
         GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace); 
         GL.CullFace(TriangleFace.Back);
-        GL.UseProgram(shader.Handle);
         
+        GL.UseProgram(shader.Handle);
         ulColor = GL.GetUniformLocation(shader.Handle, "color");
         ulModel = GL.GetUniformLocation(shader.Handle, "model");
         ulVieww = GL.GetUniformLocation(shader.Handle, "vieww");
@@ -80,7 +80,7 @@ public class SpachWindow : MeowcleWindow
         GL.DrawArrays(PrimitiveType.Triangles, 0, mesh.VertexLength);
     }
     
-    protected override void OnUnloadGraphics()
+    protected override void OnUnload()
     {
         GL.DeleteProgram(shader.Handle);
     }

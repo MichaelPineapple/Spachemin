@@ -32,7 +32,6 @@ public class Mesh
                 for (int i = 0; i < 3; i++) output.Add(verticies[a[0]][i]);
                 for (int i = 0; i < 2; i++) output.Add(texCoords[a[1]][i]);
                 for (int i = 0; i < 3; i++) output.Add(normals[a[2]][i]);
-                Console.Write("\n");
             }
             
             string[] data = File.ReadAllLines(path);

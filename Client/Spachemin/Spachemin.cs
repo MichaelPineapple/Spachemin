@@ -24,6 +24,7 @@ public class Spachemin : SpachWindow
     private Player localPlayer;
     
     private bool paused;
+    private Input pausedInput;
     private bool thirdPerson = true;
     private float cameraDistance = 1.0f;
     
@@ -33,10 +34,7 @@ public class Spachemin : SpachWindow
         Size = (700, 700);
         Title = "Spachemin";
         this.CursorState = CursorState.Grabbed;
-    }
-
-    protected override void OnLoadGraphics()
-    {
+        
         string pathApp = Path.GetDirectoryName(Environment.ProcessPath) + "/Assets/";
         string pathShaders = pathApp + "Shaders/";
         string pathMeshes = pathApp + "Meshes/";
@@ -46,9 +44,11 @@ public class Spachemin : SpachWindow
         
         Mesh meshPlayer = new Mesh(pathMeshes + "player.obj", shader);
         Mesh meshGround = new Mesh(pathMeshes + "ground.obj", shader);
+        Mesh meshSphere = new Mesh(pathMeshes + "sphere.obj", shader);
         
         Texture texPlayer = new Texture(pathTextures + "grid.png"); 
         Texture texGround = new Texture(pathTextures + "grid.png");
+        Texture texSphere = new Texture(pathTextures + "grid.png");
 
         players = new Player[net.PlayerCount];
         for (int i = 0; i < players.Length; i++)
@@ -63,13 +63,18 @@ public class Spachemin : SpachWindow
         
         GameObject ground = new GameObject(meshGround, texGround);
         ground.position = new Vector3(0.0f, groundLevel, 0.0f);
+        
+        GameObject sphere = new GameObject(meshSphere, texSphere);
+        sphere.position = new Vector3(0.0f, 0.0f, 0.0f);
+        
         gameObjects.Add(ground);
+        gameObjects.Add(sphere);
         
         lightAmbient = new Vector3(0.25f, 0.25f, 0.25f);
         lightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
         lightDirectionalDirection = new Vector3(0.5f, -1.0f, 0.0f);
         
-        base.OnLoadGraphics();
+        Load();
     }
     
     protected override void OnUpdateFrame(double dt)
@@ -86,6 +91,7 @@ public class Spachemin : SpachWindow
         if (KeyboardState.IsKeyPressed(Keys.RightBracket)) camera?.AddFov(fovIncrement);
         
         Input inputLocal = new Input(KeyboardState, MouseState);
+        if (paused) inputLocal = pausedInput;
         Input[] inputRemote = Step(inputLocal);
         for (int i = 0; i < inputRemote.Length; i++)
         {
@@ -161,6 +167,7 @@ public class Spachemin : SpachWindow
     {
         this.CursorState = CursorState.Normal;
         paused = true;
+        pausedInput = new Input(null, MouseState);
     }
 
     private void Unpause()

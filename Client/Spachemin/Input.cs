@@ -15,17 +15,23 @@ public struct Input
         MouseX = MouseY = 0.0f;
     }
     
-    public Input(KeyboardState keyboard, MouseState mouse)
+    public Input(KeyboardState? keyboard, MouseState? mouse)
     {
-        Quit = keyboard.IsKeyDown(Keys.Escape);
-        F = keyboard.IsKeyDown(Keys.W);
-        L = keyboard.IsKeyDown(Keys.A);
-        B = keyboard.IsKeyDown(Keys.S);
-        R = keyboard.IsKeyDown(Keys.D);
-        U = keyboard.IsKeyDown(Keys.Space);
-        D = keyboard.IsKeyDown(Keys.LeftControl);
-        MouseX = mouse.X;
-        MouseY = mouse.Y;
+        if (keyboard != null)
+        {
+            Quit = keyboard.IsKeyDown(Keys.Escape);
+            F = keyboard.IsKeyDown(Keys.W);
+            L = keyboard.IsKeyDown(Keys.A);
+            B = keyboard.IsKeyDown(Keys.S);
+            R = keyboard.IsKeyDown(Keys.D);
+            U = keyboard.IsKeyDown(Keys.Space);
+            D = keyboard.IsKeyDown(Keys.LeftControl);
+        }
+        if (mouse != null)
+        {
+            MouseX = mouse.X;
+            MouseY = mouse.Y;
+        }
     }
     
     public Input(byte[] data)

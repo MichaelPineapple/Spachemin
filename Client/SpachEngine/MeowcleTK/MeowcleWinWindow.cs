@@ -24,10 +24,8 @@ public unsafe class MeowcleWinWindow : NativeWindow
     
     private const int TimePeriod = 8;
     private bool disposed;
-    
-    public MeowcleWinWindow() : base(NativeWindowSettings.Default) { }
 
-    public void InitializeGraphicsContext()
+    public MeowcleWinWindow() : base(NativeWindowSettings.Default)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
