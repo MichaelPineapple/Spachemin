@@ -38,9 +38,10 @@ public class Spachemin : SpachEngineWindow
         string pathShaders = pathApp + "Shaders/";
         string pathMeshes = pathApp + "Meshes/";
         string pathTextures = pathApp + "Textures/";
-        
-        Shader shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
-        Shader shaderSkybox = new Shader(pathShaders + "Default/default.vert", pathShaders + "Skybox/skybox.frag");
+
+        string pathDefaultVertShader = pathShaders + "default.vert";
+        Shader shader = new Shader(pathDefaultVertShader, pathShaders + "default.frag");
+        Shader shaderSkybox = new Shader(pathDefaultVertShader, pathShaders + "skybox.frag");
         
         Mesh meshPlayer = new Mesh(pathMeshes + "player.obj", shader);
         Mesh meshPlanet = new Mesh(pathMeshes + "sphere.obj", shader);
@@ -48,7 +49,7 @@ public class Spachemin : SpachEngineWindow
         
         Texture texPlayer = new Texture(pathTextures + "grid.png"); 
         Texture texPlanet = new Texture(pathTextures + "grid.png");
-        Texture texSkybox = new Texture(pathTextures + "stars.png");
+        Texture texSkybox = new Texture(pathTextures + "skybox.png");
         
         skybox = new GameObject(Vector3.Zero, meshSkybox, texSkybox);
         GameObject planet0 = new GameObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texPlanet);

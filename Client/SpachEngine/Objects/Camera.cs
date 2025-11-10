@@ -40,6 +40,6 @@ public class Camera
 
     internal Matrix4 GetProjectionMatrix(float aspectRatio)
     {
-        return Matrix4.CreatePerspectiveFieldOfView(fov, aspectRatio, 0.01f, 10000f);
+        return Matrix4.CreatePerspectiveFieldOfView(fov, aspectRatio, 0.01f, 100000.0f);
     }
 }
