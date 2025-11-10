@@ -11,7 +11,7 @@ public class Mesh
     public Mesh(string path, Shader shader)
     {
         float[] mesh = ReadObjFile(path);
-        vertexLength = mesh.Length;
+        vertexLength = mesh.Length / 8;
         vao = CreateVAO(mesh, shader.handle);
     }
     
