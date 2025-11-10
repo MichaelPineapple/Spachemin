@@ -40,15 +40,26 @@ public class Spachemin : SpachEngineWindow
         string pathTextures = pathApp + "Textures/";
         
         Shader shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
+        Shader shaderSkybox = new Shader(pathShaders + "Default/default.vert", pathShaders + "Skybox/skybox.frag");
         
         Mesh meshPlayer = new Mesh(pathMeshes + "player.obj", shader);
         Mesh meshPlanet = new Mesh(pathMeshes + "sphere.obj", shader);
-        Mesh meshSkybox = new Mesh(pathMeshes + "skybox.obj", shader);
+        Mesh meshSkybox = new Mesh(pathMeshes + "skybox.obj", shaderSkybox);
         
         Texture texPlayer = new Texture(pathTextures + "grid.png"); 
         Texture texPlanet = new Texture(pathTextures + "grid.png");
-        Texture texSkybox = new Texture(pathTextures + "blank.png");
-
+        Texture texSkybox = new Texture(pathTextures + "stars.png");
+        
+        skybox = new GameObject(Vector3.Zero, meshSkybox, texSkybox);
+        GameObject planet0 = new GameObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texPlanet);
+        GameObject planet1 = new GameObject(new Vector3(-7.0f, 10.0f, 5.0f), meshPlanet, texPlanet);
+        GameObject planet2 = new GameObject(new Vector3(20.0f, -3.0f, 12.0f), meshPlanet, texPlanet);
+        
+        gameObjects.Add(skybox);
+        gameObjects.Add(planet0);
+        gameObjects.Add(planet1);
+        gameObjects.Add(planet2);
+        
         players = new SpacheminPlayer[net.playerCount];
         for (int i = 0; i < players.Length; i++)
         {
@@ -56,30 +67,17 @@ public class Spachemin : SpachEngineWindow
             players[i].color = COLORS[i];
             gameObjects.Add(players[i]);
         }
-        localPlayer = players[net.playerId];
-
-        camera = new Camera();
-        
-        GameObject planet0 = new GameObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texPlanet);
-        GameObject planet1 = new GameObject(new Vector3(-7.0f, 10.0f, 5.0f), meshPlanet, texPlanet);
-        GameObject planet2 = new GameObject(new Vector3(20.0f, -3.0f, 12.0f), meshPlanet, texPlanet);
-        skybox = new GameObject(Vector3.Zero, meshSkybox, texSkybox);
-        skybox.color = Vector3.Zero;
-
-        gravitySources.Add(new GravitySource(planet0.position, 0.001f));
-        gravitySources.Add(new GravitySource(planet1.position, 0.001f));
-        gravitySources.Add(new GravitySource(planet2.position, 0.001f));
-        
-        gameObjects.Add(planet0);
-        gameObjects.Add(planet1);
-        gameObjects.Add(planet2);
-        gameObjects.Add(skybox);
         
         lightAmbient = new Vector3(0.25f, 0.25f, 0.25f);
         lightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
         lightDirectionalDirection = new Vector3(0.5f, -1.0f, 0.0f);
         
-        Load(shader);
+        gravitySources.Add(new GravitySource(planet0.position, 0.001f));
+        gravitySources.Add(new GravitySource(planet1.position, 0.001f));
+        gravitySources.Add(new GravitySource(planet2.position, 0.001f));
+        
+        localPlayer = players[net.playerId];
+        camera = new Camera();
     }
     
     protected override void OnUpdateFrame(double dt)
