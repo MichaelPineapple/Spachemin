@@ -1,15 +1,15 @@
 using OpenTK.Graphics.OpenGL4;
 using StbImageSharp;
 
-namespace SpachEngine;
+namespace SpachEngine.Objects;
 
 public class Texture
 {
-    internal int Handle;
+    internal int handle;
     
     public Texture(string path)
     {
-        Handle = CreateTexture(LoadTexture(path));
+        handle = CreateTexture(LoadTexture(path));
     }
     
     private static ImageResult LoadTexture(string path)

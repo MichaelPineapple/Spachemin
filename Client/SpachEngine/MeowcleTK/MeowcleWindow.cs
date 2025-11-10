@@ -9,7 +9,7 @@ public class MeowcleWindow : MeowcleWinWindow
 {
     private readonly double fps;
     
-    protected float MeowcleAspectRatio { get; private set; }
+    protected float meowcleAspectRatio { get; private set; }
     
     public MeowcleWindow(double _fps = 60.0f)
     {
@@ -41,7 +41,7 @@ public class MeowcleWindow : MeowcleWinWindow
     protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
     {
         GL.Viewport(0, 0, e.Width, e.Height);
-        MeowcleAspectRatio = Size.X / (float)Size.Y;
+        meowcleAspectRatio = Size.X / (float)Size.Y;
     }
     
     protected virtual void OnUnload() { }

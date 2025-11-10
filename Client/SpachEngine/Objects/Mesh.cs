@@ -1,18 +1,18 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-namespace SpachEngine;
+namespace SpachEngine.Objects;
 
 public class Mesh
 {
-    internal int VAO { get; private set; }
-    internal int VertexLength;
+    internal int vao { get; private set; }
+    internal int vertexLength;
     
     public Mesh(string path, Shader shader)
     {
         float[] mesh = ReadObjFile(path);
-        VertexLength = mesh.Length;
-        VAO = CreateVAO(mesh, shader.Handle);
+        vertexLength = mesh.Length;
+        vao = CreateVAO(mesh, shader.handle);
     }
     
     private static float[] ReadObjFile(string path)

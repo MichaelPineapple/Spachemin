@@ -1,6 +1,6 @@
 using OpenTK.Mathematics;
 
-namespace SpachEngine;
+namespace SpachEngine.Objects;
 
 public class Camera
 {
@@ -8,17 +8,17 @@ public class Camera
     public Vector3 front = Vector3.UnitZ;
     public Vector3 up = Vector3.UnitY;
     
-    private float FOV = MathHelper.PiOver2;
+    private float fov = MathHelper.PiOver2;
     
     public float GetFov()
     {
-        return MathHelper.RadiansToDegrees(FOV);
+        return MathHelper.RadiansToDegrees(fov);
     }
         
     public void SetFov(float val)
     {
         float angle = MathHelper.Clamp(val, 0.0001f, 180.0f);
-        FOV = MathHelper.DegreesToRadians(angle);
+        fov = MathHelper.DegreesToRadians(angle);
     }
 
     public void AddFov(float val)
@@ -40,6 +40,6 @@ public class Camera
 
     internal Matrix4 GetProjectionMatrix(float aspectRatio)
     {
-        return Matrix4.CreatePerspectiveFieldOfView(FOV, aspectRatio, 0.01f, 10000f);
+        return Matrix4.CreatePerspectiveFieldOfView(fov, aspectRatio, 0.01f, 10000f);
     }
 }

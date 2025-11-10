@@ -4,22 +4,22 @@ namespace Spachemin;
 
 public struct Input
 {
-    public bool Quit;
+    public bool quit;
     public bool F, B, L, R, U, D;
-    public float MouseX, MouseY;
+    public float mouseX, mouseY;
     
     public Input()
     {
-        Quit = false;
+        quit = false;
         F = B = L = R = U = D = false;
-        MouseX = MouseY = 0.0f;
+        mouseX = mouseY = 0.0f;
     }
     
     public Input(KeyboardState? keyboard, MouseState? mouse)
     {
         if (keyboard != null)
         {
-            Quit = keyboard.IsKeyDown(Keys.Escape);
+            quit = keyboard.IsKeyDown(Keys.Escape);
             F = keyboard.IsKeyDown(Keys.W);
             L = keyboard.IsKeyDown(Keys.A);
             B = keyboard.IsKeyDown(Keys.S);
@@ -29,8 +29,8 @@ public struct Input
         }
         if (mouse != null)
         {
-            MouseX = mouse.X;
-            MouseY = mouse.Y;
+            mouseX = mouse.X;
+            mouseY = mouse.Y;
         }
     }
     
@@ -38,7 +38,7 @@ public struct Input
     {
         bool[] bools = ByteToBools(data[0]);
         
-        Quit = bools[0];
+        quit = bools[0];
         F = bools[1];
         B = bools[2];
         L = bools[3];
@@ -57,16 +57,16 @@ public struct Input
             j++;
         }
         
-        MouseX = BitConverter.ToSingle(xb);
-        MouseY = BitConverter.ToSingle(yb);
+        mouseX = BitConverter.ToSingle(xb);
+        mouseY = BitConverter.ToSingle(yb);
     }
 
     public byte[] ToBytes()
     {
-        byte b = ByteFromBools(new [] { Quit, F, B, L, R, U, D });
+        byte b = ByteFromBools(new [] { quit, F, B, L, R, U, D });
         
-        byte[] xb = BitConverter.GetBytes(MouseX);
-        byte[] yb = BitConverter.GetBytes(MouseY);
+        byte[] xb = BitConverter.GetBytes(mouseX);
+        byte[] yb = BitConverter.GetBytes(mouseY);
         
         byte[] output = new byte[9];
         output[0] = b;

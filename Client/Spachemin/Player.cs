@@ -1,5 +1,5 @@
 using OpenTK.Mathematics;
-using SpachEngine;
+using SpachEngine.Objects;
 
 namespace Spachemin;
 
@@ -64,9 +64,9 @@ public class Player : PhysicsObject
 
     public void ProcessInput(Input input)
     {
-        float deltaX = input.MouseX - prevMousePos.X;
-        float deltaY = input.MouseY - prevMousePos.Y;
-        prevMousePos = new Vector2(input.MouseX, input.MouseY);
+        float deltaX = input.mouseX - prevMousePos.X;
+        float deltaY = input.mouseY - prevMousePos.Y;
+        prevMousePos = new Vector2(input.mouseX, input.mouseY);
         SetYaw(GetYaw() + (deltaX * lookSensitivity));
         SetPitch(GetPitch() - (deltaY * lookSensitivity));
         rotation.Y = -yaw;

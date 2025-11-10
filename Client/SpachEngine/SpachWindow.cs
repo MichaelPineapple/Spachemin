@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using SpachEngine.MeowcleTK;
+using SpachEngine.Objects;
 
 namespace SpachEngine;
 
@@ -29,16 +30,17 @@ public class SpachWindow : MeowcleWindow
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace); 
         GL.CullFace(TriangleFace.Back);
+
+        int shaderHandle = shader.handle;
+        GL.UseProgram(shaderHandle);
+        ulColor = GL.GetUniformLocation(shaderHandle, "color");
+        ulModel = GL.GetUniformLocation(shaderHandle, "model");
+        ulVieww = GL.GetUniformLocation(shaderHandle, "vieww");
+        ulProjj = GL.GetUniformLocation(shaderHandle, "projj");
         
-        GL.UseProgram(shader.Handle);
-        ulColor = GL.GetUniformLocation(shader.Handle, "color");
-        ulModel = GL.GetUniformLocation(shader.Handle, "model");
-        ulVieww = GL.GetUniformLocation(shader.Handle, "vieww");
-        ulProjj = GL.GetUniformLocation(shader.Handle, "projj");
-        
-        ulLightAmb = GL.GetUniformLocation(shader.Handle, "lightAmb");
-        ulLightDirDir = GL.GetUniformLocation(shader.Handle, "lightDirDir");
-        ulLightDirColor = GL.GetUniformLocation(shader.Handle, "lightDirColor");
+        ulLightAmb = GL.GetUniformLocation(shaderHandle, "lightAmb");
+        ulLightDirDir = GL.GetUniformLocation(shaderHandle, "lightDirDir");
+        ulLightDirColor = GL.GetUniformLocation(shaderHandle, "lightDirColor");
         
         GL.Uniform3(ulLightAmb, lightAmbient);
         GL.Uniform3(ulLightDirColor, lightDirectional);
@@ -52,7 +54,7 @@ public class SpachWindow : MeowcleWindow
         if (camera != null)
         {
             Matrix4 vieww = camera.GetViewMatrix();
-            Matrix4 projj = camera.GetProjectionMatrix(MeowcleAspectRatio);
+            Matrix4 projj = camera.GetProjectionMatrix(meowcleAspectRatio);
             GL.UniformMatrix4(ulVieww, true, ref vieww);
             GL.UniformMatrix4(ulProjj, true, ref projj);
         }
@@ -75,13 +77,13 @@ public class SpachWindow : MeowcleWindow
         GL.UniformMatrix4(ulModel, true, ref model);
         GL.Uniform3(ulColor, color);
         GL.ActiveTexture(TextureUnit.Texture0);
-        GL.BindTexture(TextureTarget.Texture2D, tex.Handle);
-        GL.BindVertexArray(mesh.VAO);
-        GL.DrawArrays(PrimitiveType.Triangles, 0, mesh.VertexLength);
+        GL.BindTexture(TextureTarget.Texture2D, tex.handle);
+        GL.BindVertexArray(mesh.vao);
+        GL.DrawArrays(PrimitiveType.Triangles, 0, mesh.vertexLength);
     }
     
     protected override void OnUnload()
     {
-        GL.DeleteProgram(shader.Handle);
+        GL.DeleteProgram(shader.handle);
     }
 }

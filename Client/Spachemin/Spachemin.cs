@@ -3,6 +3,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using SpacheNet;
 using SpachEngine;
+using SpachEngine.Objects;
 
 namespace Spachemin;
 
@@ -15,8 +16,6 @@ public class Spachemin : SpachWindow
         new Vector3(0.0f, 1.0f, 0.0f),
         new Vector3(0.0f, 0.0f, 0.0f),
     };
-
-    private float groundLevel = -1.0f;
     
     private readonly SpacheNetClient net;
     private Player[] players;
@@ -32,7 +31,7 @@ public class Spachemin : SpachWindow
         net = _net;
         Size = (700, 700);
         Title = "Spachemin";
-        this.CursorState = CursorState.Grabbed;
+        CursorState = CursorState.Grabbed;
         
         string pathApp = Path.GetDirectoryName(Environment.ProcessPath) + "/Assets/";
         string pathShaders = pathApp + "Shaders/";
@@ -47,7 +46,7 @@ public class Spachemin : SpachWindow
         Texture texPlayer = new Texture(pathTextures + "grid.png"); 
         Texture texPlanet = new Texture(pathTextures + "grid.png");
 
-        players = new Player[net.PlayerCount];
+        players = new Player[net.playerCount];
         for (int i = 0; i < players.Length; i++)
         {
             players[i] = new Player(meshPlayer, texPlayer);
@@ -55,7 +54,7 @@ public class Spachemin : SpachWindow
             players[i].color = COLORS[i];
             gameObjects.Add(players[i]);
         }
-        localPlayer = players[net.PlayerId];
+        localPlayer = players[net.playerId];
 
         camera = new Camera();
         
@@ -90,7 +89,7 @@ public class Spachemin : SpachWindow
         for (int i = 0; i < inputRemote.Length; i++)
         {
             Input input = inputRemote[i];
-            if (input.Quit) Close();
+            if (input.quit) Close();
             players[i].ProcessInput(input);
         }
         
@@ -154,14 +153,14 @@ public class Spachemin : SpachWindow
     
     private void Pause()
     {
-        this.CursorState = CursorState.Normal;
-        paused = true;
+        CursorState = CursorState.Normal;
         pausedInput = new Input(null, MouseState);
+        paused = true;
     }
 
     private void Unpause()
     {
-        this.CursorState = CursorState.Grabbed;
+        CursorState = CursorState.Grabbed;
         paused = false;
     }
 }

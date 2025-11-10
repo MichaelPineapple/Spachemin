@@ -1,6 +1,6 @@
 using OpenTK.Mathematics;
 
-namespace SpachEngine;
+namespace SpachEngine.Objects;
 
 public class GameObject
 {

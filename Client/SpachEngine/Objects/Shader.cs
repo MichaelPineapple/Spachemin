@@ -1,16 +1,16 @@
 using OpenTK.Graphics.OpenGL4;
 
-namespace SpachEngine;
+namespace SpachEngine.Objects;
 
 public class Shader
 {
-    internal int Handle { get; private set; }
+    internal int handle { get; private set; }
     
     public Shader(string pathVert, string pathFrag)
     {
         string srcShaderVert = File.ReadAllText(pathVert);
         string srcShaderFrag = File.ReadAllText(pathFrag);
-        Handle = CreateShader(srcShaderVert, srcShaderFrag);
+        handle = CreateShader(srcShaderVert, srcShaderFrag);
     }
     
     public static int CreateShader(string srcShaderVert, string srcShaderFrag)

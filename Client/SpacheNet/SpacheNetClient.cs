@@ -13,8 +13,8 @@ public class SpacheNetClient
     private TcpClient? client;
     
     private int frame;
-    public int PlayerCount { get; private set; }
-    public int PlayerId { get; private set; }
+    public int playerCount { get; private set; }
+    public int playerId { get; private set; }
     
     public void Connect(string? ip, int port = PORT_DEFAULT)
     {
@@ -34,13 +34,13 @@ public class SpacheNetClient
         {
             byte[] loginBuffer = new byte[4];
             _ = stream?.Read(loginBuffer, 0, loginBuffer.Length);
-            PlayerCount = loginBuffer[0];
-            PlayerId = loginBuffer[1];
+            playerCount = loginBuffer[0];
+            playerId = loginBuffer[1];
             frame = loginBuffer[2];
             client.NoDelay = (loginBuffer[3] != 0);
             stream?.Write(new[] { LOGIN_KEY }, 0, 1);
         }
-        else PlayerCount = 1;
+        else playerCount = 1;
     }
     
     public byte[][] Step(byte[] data)
@@ -52,12 +52,12 @@ public class SpacheNetClient
         byte[] augmented = PrependData(frameIndexData, data);
         stream?.Write(augmented, 0, MAX_DATA + frameIndexData.Length);
         
-        int bufferLen = PlayerCount * MAX_DATA;
+        int bufferLen = playerCount * MAX_DATA;
         byte[] buffer = new byte[bufferLen];
         _ = stream?.Read(buffer, 0, bufferLen);
         if (stream == null) buffer = data;
         
-        byte[][] output = new byte[PlayerCount][];
+        byte[][] output = new byte[playerCount][];
         int j = -1;
         for (int i = 0; i < bufferLen; i++)
         {

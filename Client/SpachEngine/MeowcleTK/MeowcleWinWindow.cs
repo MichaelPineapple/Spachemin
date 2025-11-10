@@ -15,14 +15,14 @@ public unsafe class MeowcleWinWindow : NativeWindow
     private static extern IntPtr GetCurrentThread();
     
     [DllImport("winmm")]
-    private static extern uint timeBeginPeriod(uint uPeriod);
+    private static extern uint TimeBeginPeriod(uint uPeriod);
     
     [DllImport("winmm")]
-    private static extern uint timeEndPeriod(uint uPeriod);
+    private static extern uint TimeEndPeriod(uint uPeriod);
     
     #endregion
     
-    private const int TimePeriod = 8;
+    private const int TIME_PERIOD = 8;
     private bool disposed;
 
     public MeowcleWinWindow() : base(NativeWindowSettings.Default)
@@ -30,7 +30,7 @@ public unsafe class MeowcleWinWindow : NativeWindow
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             SetThreadAffinityMask(GetCurrentThread(), new IntPtr(1));
-            timeBeginPeriod(TimePeriod);
+            TimeBeginPeriod(TIME_PERIOD);
         }
         Context?.MakeCurrent();
     }
@@ -42,7 +42,7 @@ public unsafe class MeowcleWinWindow : NativeWindow
     
     public virtual void Run()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) timeEndPeriod(TimePeriod);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) TimeEndPeriod(TIME_PERIOD);
     }
     
     public override void Dispose()
