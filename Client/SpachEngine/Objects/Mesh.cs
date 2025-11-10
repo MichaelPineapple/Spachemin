@@ -15,6 +15,7 @@ public class Mesh
         vao = CreateVAO(mesh, shader.handle);
     }
     
+    // https://en.wikipedia.org/wiki/Wavefront_.obj_file
     private static float[] ReadObjFile(string path)
     {
         try
