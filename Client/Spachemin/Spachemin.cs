@@ -16,7 +16,6 @@ public class Spachemin : SpachWindow
         new Vector3(0.0f, 0.0f, 0.0f),
     };
 
-    private Vector3 gravity = new Vector3(0.0f, -0.0001f, 0.0f);
     private float groundLevel = -1.0f;
     
     private readonly SpacheNetClient net;
@@ -43,17 +42,16 @@ public class Spachemin : SpachWindow
         shader = new Shader(pathShaders + "Default/default.vert", pathShaders + "Default/default.frag");
         
         Mesh meshPlayer = new Mesh(pathMeshes + "player.obj", shader);
-        Mesh meshGround = new Mesh(pathMeshes + "ground.obj", shader);
-        Mesh meshSphere = new Mesh(pathMeshes + "sphere.obj", shader);
+        Mesh meshPlanet = new Mesh(pathMeshes + "sphere.obj", shader);
         
         Texture texPlayer = new Texture(pathTextures + "grid.png"); 
-        Texture texGround = new Texture(pathTextures + "grid.png");
-        Texture texSphere = new Texture(pathTextures + "grid.png");
+        Texture texPlanet = new Texture(pathTextures + "grid.png");
 
         players = new Player[net.PlayerCount];
         for (int i = 0; i < players.Length; i++)
         {
             players[i] = new Player(meshPlayer, texPlayer);
+            players[i].position = new Vector3(-2.0f, 0.0f, -2.0f);
             players[i].color = COLORS[i];
             gameObjects.Add(players[i]);
         }
@@ -61,14 +59,10 @@ public class Spachemin : SpachWindow
 
         camera = new Camera();
         
-        GameObject ground = new GameObject(meshGround, texGround);
-        ground.position = new Vector3(0.0f, groundLevel, 0.0f);
+        GameObject planet = new GameObject(meshPlanet, texPlanet);
+        planet.position = new Vector3(0.0f, 0.0f, 0.0f);
         
-        GameObject sphere = new GameObject(meshSphere, texSphere);
-        sphere.position = new Vector3(0.0f, 0.0f, 0.0f);
-        
-        gameObjects.Add(ground);
-        gameObjects.Add(sphere);
+        gameObjects.Add(planet);
         
         lightAmbient = new Vector3(0.25f, 0.25f, 0.25f);
         lightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
@@ -113,22 +107,17 @@ public class Spachemin : SpachWindow
     {
         if (obj is PhysicsObject)
         {
-            const float feetOffset = 0.1f;
             PhysicsObject physObj = (PhysicsObject)obj;
-            float feet = physObj.position.Y - feetOffset;
-            Vector3 vel = physObj.velocity;
-            if (feet > groundLevel) physObj.ApplyForce(gravity);
-            else if (feet < groundLevel)
-            {
-                if (vel.Y < 0) physObj.velocity.Y = 0;
-                physObj.position.Y = groundLevel + feetOffset;
-            }
-            else
-            {
-                const float cof = 0.25f;
-                Vector3 frictionForce = new Vector3(-vel.X * cof, 0.0f, -vel.Z * cof);
-                physObj.ApplyForce(frictionForce);
-            }
+            Vector3 pos = physObj.position;
+            Vector3 toPlanet = Vector3.Zero - pos;
+            float gravStrength = 0.001f / (toPlanet.Length * toPlanet.Length);
+            Vector3 gravDirection = (toPlanet.Length == 0) ? Vector3.Zero : toPlanet.Normalized();
+            Vector3 gravity = gravDirection * gravStrength;
+            
+            const float planetRadius = 1.0f;
+            if (toPlanet.Length > planetRadius) physObj.ApplyForce(gravity);
+            else physObj.velocity /= 2.0f;
+            
             physObj.Update();
         }
     }

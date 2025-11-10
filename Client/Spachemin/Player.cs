@@ -5,7 +5,7 @@ namespace Spachemin;
 
 public class Player : PhysicsObject
 {
-    private const float SPEED = 0.005f;
+    private const float SPEED = 0.001f;
     
     private Vector3 front = Vector3.UnitZ;
     private Vector3 up = Vector3.UnitY;
