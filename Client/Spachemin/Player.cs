@@ -17,7 +17,7 @@ public class Player : PhysicsObject
     private Vector2 prevMousePos = Vector2.Zero;
     private float lookSensitivity = 0.2f;
     
-    public Player(Mesh _mesh, Texture _tex) : base(_mesh, _tex) { }
+    public Player(Vector3 _pos, Mesh _mesh, Texture _tex) : base(_pos, _mesh, _tex) { }
 
     public Vector3 GetFrontVector()
     {

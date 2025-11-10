@@ -6,7 +6,7 @@ public class PhysicsObject : GameObject
 {
     public Vector3 velocity = Vector3.Zero;
 
-    public PhysicsObject(Mesh _mesh, Texture _tex) : base(_mesh, _tex) { }
+    public PhysicsObject(Vector3 _pos, Mesh _mesh, Texture _tex) : base(_pos, _mesh, _tex) { }
     
     public void ApplyForce(Vector3 force)
     {

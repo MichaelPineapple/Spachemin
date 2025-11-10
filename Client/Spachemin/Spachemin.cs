@@ -20,6 +20,7 @@ public class Spachemin : SpachWindow
     private readonly SpacheNetClient net;
     private Player[] players;
     private Player localPlayer;
+    private List<GravitySource> gravitySources = new List<GravitySource>();
     
     private bool paused;
     private Input pausedInput;
@@ -49,8 +50,7 @@ public class Spachemin : SpachWindow
         players = new Player[net.playerCount];
         for (int i = 0; i < players.Length; i++)
         {
-            players[i] = new Player(meshPlayer, texPlayer);
-            players[i].position = new Vector3(-2.0f, 0.0f, -2.0f);
+            players[i] = new Player(new Vector3(-2.0f, 0.0f, -2.0f), meshPlayer, texPlayer);
             players[i].color = COLORS[i];
             gameObjects.Add(players[i]);
         }
@@ -58,10 +58,17 @@ public class Spachemin : SpachWindow
 
         camera = new Camera();
         
-        GameObject planet = new GameObject(meshPlanet, texPlanet);
-        planet.position = new Vector3(0.0f, 0.0f, 0.0f);
+        GameObject planet0 = new GameObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texPlanet);
+        GameObject planet1 = new GameObject(new Vector3(-7.0f, 10.0f, 5.0f), meshPlanet, texPlanet);
+        GameObject planet2 = new GameObject(new Vector3(20.0f, -3.0f, 12.0f), meshPlanet, texPlanet);
+
+        gravitySources.Add(new GravitySource(planet0.position, 0.001f));
+        gravitySources.Add(new GravitySource(planet1.position, 0.001f));
+        gravitySources.Add(new GravitySource(planet2.position, 0.001f));
         
-        gameObjects.Add(planet);
+        gameObjects.Add(planet0);
+        gameObjects.Add(planet1);
+        gameObjects.Add(planet2);
         
         lightAmbient = new Vector3(0.25f, 0.25f, 0.25f);
         lightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
@@ -108,14 +115,19 @@ public class Spachemin : SpachWindow
         {
             PhysicsObject physObj = (PhysicsObject)obj;
             Vector3 pos = physObj.position;
-            Vector3 toPlanet = Vector3.Zero - pos;
-            float gravStrength = 0.001f / (toPlanet.Length * toPlanet.Length);
-            Vector3 gravDirection = (toPlanet.Length == 0) ? Vector3.Zero : toPlanet.Normalized();
-            Vector3 gravity = gravDirection * gravStrength;
+
+            for (int i = 0; i < gravitySources.Count; i++)
+            {
+                GravitySource gravSrc = gravitySources[i];
+                Vector3 toSrc = gravSrc.position - pos;
+                float gravStrength = gravSrc.mass / (toSrc.Length * toSrc.Length);
+                Vector3 gravDirection = (toSrc.Length == 0) ? Vector3.Zero : toSrc.Normalized();
+                Vector3 gravity = gravDirection * gravStrength;
             
-            const float planetRadius = 1.0f;
-            if (toPlanet.Length > planetRadius) physObj.ApplyForce(gravity);
-            else physObj.velocity /= 2.0f;
+                const float planetRadius = 1.0f;
+                if (toSrc.Length > planetRadius) physObj.ApplyForce(gravity);
+                else physObj.velocity /= 2.0f;
+            }
             
             physObj.Update();
         }
