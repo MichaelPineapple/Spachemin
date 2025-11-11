@@ -1,35 +1,36 @@
+﻿using MclTK;
 using OpenTK.Mathematics;
-using SpachEngine.Objects;
+using SoupEngine.Objects;
 
-namespace SpachEngine.Layers;
+namespace SoupEngine;
 
-public class PhysicsLayer : GraphicsLayer
+public class SoupWindow : MclWindow
 {
-    protected List<GravitySource> gravitySources = new List<GravitySource>();
+    protected List<GravitySource> GravitySources = new List<GravitySource>();
 
     protected override void OnUpdateFrame(double dt)
     {
-        for (int i = 0; i < gameObjects.Count; i++) UpdateObject(gameObjects[i]);
+        for (int i = 0; i < MclObjects.Count; i++) UpdateObject(MclObjects[i]);
     }
     
-    private void UpdateObject(GameObject obj)
+    private void UpdateObject(MclObject obj)
     {
-        if (obj is PhysicsObject)
+        if (obj is SoupObject)
         {
-            PhysicsObject physObj = (PhysicsObject)obj;
-            Vector3 pos = physObj.position;
+            SoupObject physObj = (SoupObject)obj;
+            Vector3 pos = physObj.Position;
 
-            for (int i = 0; i < gravitySources.Count; i++)
+            for (int i = 0; i < GravitySources.Count; i++)
             {
-                GravitySource gravSrc = gravitySources[i];
-                Vector3 gravSrcPos = gravSrc.position;
+                GravitySource gravSrc = GravitySources[i];
+                Vector3 gravSrcPos = gravSrc.Position;
                 const float planetRadius = 1.0f;
                 if ((gravSrcPos - pos).Length > planetRadius)
                 {
-                    Vector3 forceGravity = CalculateGravityVector(1.0f, pos, gravSrcPos, 1.0f, gravSrc.mass);
+                    Vector3 forceGravity = CalculateGravityVector(1.0f, pos, gravSrcPos, 1.0f, gravSrc.Mass);
                     physObj.ApplyForce(forceGravity);
                 }
-                else physObj.velocity /= 2.0f;
+                else physObj.Velocity /= 2.0f;
             }
             
             physObj.Update();

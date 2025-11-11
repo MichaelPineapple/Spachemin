@@ -1,13 +1,14 @@
+using MclTK;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using SpacheNet;
-using SpachEngine;
-using SpachEngine.Objects;
+using SoupEngine;
+using SoupEngine.Objects;
 
 namespace Spachemin;
 
-public class Spachemin : SpachEngineWindow
+public class Spachemin : SoupWindow
 {
     private static readonly Vector3[] COLORS = new[]
     {
@@ -17,19 +18,19 @@ public class Spachemin : SpachEngineWindow
         new Vector3(0.0f, 0.0f, 0.0f),
     };
     
-    private readonly SpacheNetClient net;
-    private SpacheminPlayer[] players;
-    private SpacheminPlayer localPlayer;
-    private GameObject skybox;
+    private readonly SpacheNetClient Net;
+    private Player[] Players;
+    private Player LocalPlayer;
+    private MclObject Skybox;
     
-    private bool paused;
-    private Input pausedInput;
-    private bool thirdPerson = true;
-    private float cameraDistance = 1.0f;
+    private bool Paused;
+    private Input PausedInput;
+    private bool ThirdPerson = true;
+    private float CameraDistance = 1.0f;
     
     public Spachemin(SpacheNetClient _net)
     {
-        net = _net;
+        Net = _net;
         Size = (700, 700);
         Title = "Spachemin";
         CursorState = CursorState.Grabbed;
@@ -40,45 +41,46 @@ public class Spachemin : SpachEngineWindow
         string pathTextures = pathApp + "Textures/";
 
         string pathDefaultVertShader = pathShaders + "default.vert";
-        Shader shader = new Shader(pathDefaultVertShader, pathShaders + "default.frag");
-        Shader shaderSkybox = new Shader(pathDefaultVertShader, pathShaders + "skybox.frag");
+        MclShader shaderDefault = new MclShader(pathDefaultVertShader, pathShaders + "default.frag");
+        MclShader shaderSkybox = new MclShader(pathDefaultVertShader, pathShaders + "skybox.frag");
         
-        Mesh meshPlayer = new Mesh(pathMeshes + "player.obj", shader);
-        Mesh meshPlanet = new Mesh(pathMeshes + "sphere.obj", shader);
-        Mesh meshSkybox = new Mesh(pathMeshes + "skybox.obj", shaderSkybox);
+        MclMesh meshPlayer = new MclMesh(pathMeshes + "player.obj", shaderDefault);
+        MclMesh meshPlanet = new MclMesh(pathMeshes + "sphere.obj", shaderDefault);
+        MclMesh meshSkybox = new MclMesh(pathMeshes + "skybox.obj", shaderSkybox);
         
-        Texture texPlayer = new Texture(pathTextures + "grid.png"); 
-        Texture texPlanet = new Texture(pathTextures + "grid.png");
-        Texture texSkybox = new Texture(pathTextures + "skybox.png");
+        MclTexture texGrid = new MclTexture(pathTextures + "grid.png"); 
+        MclTexture texSkybox = new MclTexture(pathTextures + "blank.png");
         
-        skybox = new GameObject(Vector3.Zero, meshSkybox, texSkybox);
-        GameObject planet0 = new GameObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texPlanet);
-        GameObject planet1 = new GameObject(new Vector3(-7.0f, 10.0f, 5.0f), meshPlanet, texPlanet);
-        GameObject planet2 = new GameObject(new Vector3(20.0f, -3.0f, 12.0f), meshPlanet, texPlanet);
+        Skybox = new MclObject(Vector3.Zero, meshSkybox, texSkybox);
+        Skybox.Color = Vector3.Zero;
         
-        gameObjects.Add(skybox);
-        gameObjects.Add(planet0);
-        gameObjects.Add(planet1);
-        gameObjects.Add(planet2);
+        MclObject planet0 = new MclObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texGrid);
+        MclObject planet1 = new MclObject(new Vector3(-7.0f, 10.0f, 5.0f), meshPlanet, texGrid);
+        MclObject planet2 = new MclObject(new Vector3(20.0f, -3.0f, 12.0f), meshPlanet, texGrid);
         
-        players = new SpacheminPlayer[net.playerCount];
-        for (int i = 0; i < players.Length; i++)
+        MclObjects.Add(Skybox);
+        MclObjects.Add(planet0);
+        MclObjects.Add(planet1);
+        MclObjects.Add(planet2);
+        
+        Players = new Player[Net.PlayerCount];
+        for (int i = 0; i < Players.Length; i++)
         {
-            players[i] = new SpacheminPlayer(new Vector3(-2.0f, 0.0f, -2.0f), meshPlayer, texPlayer);
-            players[i].color = COLORS[i];
-            gameObjects.Add(players[i]);
+            Players[i] = new Player(new Vector3(-2.0f, 0.0f, -2.0f), meshPlayer, texGrid);
+            Players[i].Color = COLORS[i];
+            MclObjects.Add(Players[i]);
         }
         
-        lightAmbient = new Vector3(0.25f, 0.25f, 0.25f);
-        lightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
-        lightDirectionalDirection = new Vector3(0.5f, -1.0f, 0.0f);
+        LightAmbient = new Vector3(0.25f, 0.25f, 0.25f);
+        LightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
+        LightDirectionalDirection = new Vector3(0.5f, -1.0f, 0.0f);
         
-        gravitySources.Add(new GravitySource(planet0.position, 0.001f));
-        gravitySources.Add(new GravitySource(planet1.position, 0.001f));
-        gravitySources.Add(new GravitySource(planet2.position, 0.001f));
+        GravitySources.Add(new GravitySource(planet0.Position, 0.001f));
+        GravitySources.Add(new GravitySource(planet1.Position, 0.001f));
+        GravitySources.Add(new GravitySource(planet2.Position, 0.001f));
         
-        localPlayer = players[net.playerId];
-        camera = new Camera();
+        LocalPlayer = Players[Net.PlayerId];
+        Camera = new MclCamera();
     }
     
     protected override void OnUpdateFrame(double dt)
@@ -87,37 +89,37 @@ public class Spachemin : SpachEngineWindow
         if (KeyboardState.IsKeyPressed(Keys.C)) ToggleThirdPerson();
 
         const float cameraDistanceIncrement = 0.1f;
-        if (KeyboardState.IsKeyPressed(Keys.Equal)) cameraDistance -= cameraDistanceIncrement;
-        if (KeyboardState.IsKeyPressed(Keys.Minus)) cameraDistance += cameraDistanceIncrement;
+        if (KeyboardState.IsKeyPressed(Keys.Equal)) CameraDistance -= cameraDistanceIncrement;
+        if (KeyboardState.IsKeyPressed(Keys.Minus)) CameraDistance += cameraDistanceIncrement;
 
         const float fovIncrement = 10.0f;
-        if (KeyboardState.IsKeyPressed(Keys.LeftBracket)) camera?.AddFov(-fovIncrement);
-        if (KeyboardState.IsKeyPressed(Keys.RightBracket)) camera?.AddFov(fovIncrement);
+        if (KeyboardState.IsKeyPressed(Keys.LeftBracket)) Camera?.AddFov(-fovIncrement);
+        if (KeyboardState.IsKeyPressed(Keys.RightBracket)) Camera?.AddFov(fovIncrement);
         
         Input inputLocal = new Input(KeyboardState, MouseState);
-        if (paused) inputLocal = pausedInput;
+        if (Paused) inputLocal = PausedInput;
         Input[] inputRemote = Step(inputLocal);
         for (int i = 0; i < inputRemote.Length; i++)
         {
             Input input = inputRemote[i];
-            if (input.quit) Close();
-            players[i].ProcessInput(input);
+            if (input.Quit) Close();
+            Players[i].ProcessInput(input);
         }
         
         base.OnUpdateFrame(dt);
         
         Vector3 cameraOffset = Vector3.Zero;
-        Vector3 front = localPlayer.GetFrontVector();
-        Vector3 up = localPlayer.GetUpVector();
-        if (thirdPerson) cameraOffset = front.Normalized() * -cameraDistance;
-        camera?.Update(localPlayer.position + cameraOffset, front, up);
+        Vector3 front = LocalPlayer.GetFrontVector();
+        Vector3 up = LocalPlayer.GetUpVector();
+        if (ThirdPerson) cameraOffset = front.Normalized() * -CameraDistance;
+        Camera?.Update(LocalPlayer.Position + cameraOffset, front, up);
 
-        skybox.position = localPlayer.position;
+        Skybox.Position = LocalPlayer.Position;
     }
         
     private Input[] Step(Input input)
     {
-        byte[][] matrix = net.Step(input.ToBytes());
+        byte[][] matrix = Net.Step(input.ToBytes());
         Input[] output = new Input[matrix.Length];
         for (int i = 0; i < matrix.Length; i++) output[i] = new Input(matrix[i]);
         return output;
@@ -125,37 +127,51 @@ public class Spachemin : SpachEngineWindow
     
     public void GoThirdPerson()
     {
-        thirdPerson = true;
+        ThirdPerson = true;
     }
 
     public void GoFirstPerson()
     {
-        thirdPerson = false;
+        ThirdPerson = false;
     }
 
     public void ToggleThirdPerson()
     {
-        if (thirdPerson) GoFirstPerson();
+        if (ThirdPerson) GoFirstPerson();
         else GoThirdPerson();
     }
     
     private void TogglePause()
     {
-        if (paused) Unpause();
+        if (Paused) Unpause();
         else Pause();
     }
     
     private void Pause()
     {
         CursorState = CursorState.Normal;
-        pausedInput = new Input(null, MouseState);
-        paused = true;
+        PausedInput = new Input(null, MouseState);
+        Paused = true;
     }
 
     private void Unpause()
     {
         CursorState = CursorState.Grabbed;
-        paused = false;
+        Paused = false;
+    }
+    
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("*** Spachemin ***");
+        string? ip = null;
+        if (!(args.Length > 0 && args[0] == "local")) ip = Console.ReadLine();
+        if (ip?.Trim().ToLower() == "l") ip = null;
+        SpacheNetClient net = new SpacheNetClient();
+        net.Connect(ip);
+        Console.WriteLine("Connected");
+        Spachemin spachemin = new Spachemin(net);
+        spachemin.Run();
+        net.Disconnect();  
     }
 }
 

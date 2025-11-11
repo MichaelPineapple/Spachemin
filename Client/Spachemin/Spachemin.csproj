@@ -17,7 +17,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SpacheNet\SpacheNet.csproj" />
-      <ProjectReference Include="..\SpachEngine\SpachEngine.csproj" />
+      <ProjectReference Include="..\SoupEngine\SoupEngine.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="MclTK">
+        <HintPath>..\dep\MclTK.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

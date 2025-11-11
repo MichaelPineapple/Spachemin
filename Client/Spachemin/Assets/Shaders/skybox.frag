@@ -5,14 +5,15 @@ in vec3 _normal;
 in vec3 _fragPos;
 
 uniform sampler2D texture0;
-uniform vec3 color;
-uniform vec3 lightAmb;
-uniform vec3 lightDirDir;
-uniform vec3 lightDirColor;
+
+uniform vec3 uColor;
+uniform vec3 uLightAmb;
+uniform vec3 uLightDirDir;
+uniform vec3 uLightDirColor;
 
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = texture(texture0, _tex) * vec4(color, 1.0);
+    FragColor = texture(texture0, _tex) * vec4(uColor, 1.0);
 }

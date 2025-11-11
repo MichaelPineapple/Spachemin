@@ -9,55 +9,55 @@ public class SpacheNetClient
     private const byte LOGIN_KEY = 69;
     public const int MAX_DATA = 10;
     
-    private Stream? stream;
-    private TcpClient? client;
+    private Stream? Stream;
+    private TcpClient? Client;
     
-    private int frame;
-    public int playerCount { get; private set; }
-    public int playerId { get; private set; }
+    private int Frame;
+    public int PlayerCount { get; private set; }
+    public int PlayerId { get; private set; }
     
     public void Connect(string? ip, int port = PORT_DEFAULT)
     {
         if (ip != null)
         {
             if (ip.Length == 0) ip = IP_LOCALHOST;
-            client = new TcpClient();
-            client.Connect(ip, port);
-            stream = client.GetStream();
+            Client = new TcpClient();
+            Client.Connect(ip, port);
+            Stream = Client.GetStream();
         }
         Login();
     }
     
     private void Login()
     {
-        if (client != null)
+        if (Client != null)
         {
             byte[] loginBuffer = new byte[4];
-            _ = stream?.Read(loginBuffer, 0, loginBuffer.Length);
-            playerCount = loginBuffer[0];
-            playerId = loginBuffer[1];
-            frame = loginBuffer[2];
-            client.NoDelay = (loginBuffer[3] != 0);
-            stream?.Write(new[] { LOGIN_KEY }, 0, 1);
+            _ = Stream?.Read(loginBuffer, 0, loginBuffer.Length);
+            PlayerCount = loginBuffer[0];
+            PlayerId = loginBuffer[1];
+            Frame = loginBuffer[2];
+            Client.NoDelay = (loginBuffer[3] != 0);
+            Stream?.Write(new[] { LOGIN_KEY }, 0, 1);
         }
-        else playerCount = 1;
+        else PlayerCount = 1;
     }
     
     public byte[][] Step(byte[] data)
     {
         if (data.Length > MAX_DATA) throw new Exception("Step data exceeds MAX_DATA limit (" + MAX_DATA + ")");
         
-        byte[] frameIndexData = BytesFromInt(frame);
+        byte[] frameIndexData = BytesFromInt(Frame);
         data = PrependData(data, new byte[MAX_DATA]);
         byte[] augmented = PrependData(frameIndexData, data);
-        stream?.Write(augmented, 0, MAX_DATA + frameIndexData.Length);
+        Stream?.Write(augmented, 0, MAX_DATA + frameIndexData.Length);
         
-        int bufferLen = playerCount * MAX_DATA;
+        int bufferLen = PlayerCount * MAX_DATA;
         byte[] buffer = new byte[bufferLen];
-        _ = stream?.Read(buffer, 0, bufferLen);
-        if (stream == null) buffer = data;
+        _ = Stream?.Read(buffer, 0, bufferLen);
+        if (Stream == null) buffer = data;
         
-        byte[][] output = new byte[playerCount][];
+        byte[][] output = new byte[PlayerCount][];
         int j = -1;
         for (int i = 0; i < bufferLen; i++)
         {
@@ -70,15 +70,15 @@ public class SpacheNetClient
             output[j][k] = buffer[i];
         }
         
-        frame++;
+        Frame++;
         return output;
     }
     
     public void Disconnect()
     {
-        client?.Close();
-        client = null;
-        stream = null;
+        Client?.Close();
+        Client = null;
+        Stream = null;
     }
     
     private static byte[] BytesFromInt(int val)

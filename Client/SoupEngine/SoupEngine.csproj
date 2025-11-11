@@ -19,4 +19,10 @@
       <PackageReference Include="StbImageSharp" Version="2.30.15" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="MclTK">
+        <HintPath>..\dep\MclTK.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

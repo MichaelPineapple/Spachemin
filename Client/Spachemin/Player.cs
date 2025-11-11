@@ -1,24 +1,25 @@
+using MclTK;
 using OpenTK.Mathematics;
-using SpachEngine.Objects;
+using SoupEngine.Objects;
 
 namespace Spachemin;
 
-public class SpacheminPlayer : Player
+public class Player : SoupPlayer
 {
     private const float SPEED = 0.001f;
-    private float lookSensitivity = 0.002f;
-    private Vector2 prevMousePos = Vector2.Zero;
+    private float LookSensitivity = 0.002f;
+    private Vector2 PrevMouse = Vector2.Zero;
     
-    public SpacheminPlayer(Vector3 _pos, Mesh _mesh, Texture _tex) : base(_pos, _mesh, _tex) { }
+    public Player(Vector3 pos, MclMesh mesh, MclTexture tex) : base(pos, mesh, tex) { }
     
     public void ProcessInput(Input input)
     {
-        float deltaX = input.mouseX - prevMousePos.X;
-        float deltaY = input.mouseY - prevMousePos.Y;
-        prevMousePos = new Vector2(input.mouseX, input.mouseY);
-        SetYaw(GetYaw() + (deltaX * lookSensitivity));
-        SetPitch(GetPitch() - (deltaY * lookSensitivity));
-        rotation.Y = -GetYaw();
+        float deltaX = input.MouseX - PrevMouse.X;
+        float deltaY = input.MouseY - PrevMouse.Y;
+        PrevMouse = new Vector2(input.MouseX, input.MouseY);
+        SetYaw(GetYaw() + (deltaX * LookSensitivity));
+        SetPitch(GetPitch() - (deltaY * LookSensitivity));
+        Rotation.Y = -GetYaw();
 
         Vector3 front = GetFrontVector();
         Vector3 right = GetRightVector();
