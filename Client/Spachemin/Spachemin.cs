@@ -49,11 +49,9 @@ public class Spachemin : SoupWindow
         MclMesh meshSkybox = new MclMesh(pathMeshes + "skybox.obj", shaderSkybox);
         
         MclTexture texGrid = new MclTexture(pathTextures + "grid.png"); 
-        MclTexture texSkybox = new MclTexture(pathTextures + "blank.png");
+        MclTexture texSkybox = new MclTexture(pathTextures + "skybox.png");
         
-        Skybox = new MclObject(Vector3.Zero, meshSkybox, texSkybox);
-        Skybox.Color = Vector3.Zero;
-        
+        Skybox = new MclObject(Vector3.Zero, meshSkybox, texSkybox); 
         MclObject planet0 = new MclObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texGrid);
         MclObject planet1 = new MclObject(new Vector3(-7.0f, 10.0f, 5.0f), meshPlanet, texGrid);
         MclObject planet2 = new MclObject(new Vector3(20.0f, -3.0f, 12.0f), meshPlanet, texGrid);
