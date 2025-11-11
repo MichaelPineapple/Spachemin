@@ -1,13 +1,20 @@
-﻿using MclTK;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
+using MclTK;
+using MclNet;
 using SoupEngine.Objects;
 
 namespace SoupEngine;
 
 public class SoupWindow : MclWindow
 {
+    protected readonly MclNetClient Net;
     protected List<GravitySource> GravitySources = new List<GravitySource>();
 
+    public SoupWindow(MclNetClient net)
+    {
+        Net = net;
+    }
+    
     protected override void OnUpdateFrame(double dt)
     {
         for (int i = 0; i < MclObjects.Count; i++) UpdateObject(MclObjects[i]);

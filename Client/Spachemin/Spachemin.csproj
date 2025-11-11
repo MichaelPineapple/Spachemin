@@ -16,11 +16,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SpacheNet\SpacheNet.csproj" />
       <ProjectReference Include="..\SoupEngine\SoupEngine.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="MclNet">
+        <HintPath>..\dep\MclNet.dll</HintPath>
+      </Reference>
       <Reference Include="MclTK">
         <HintPath>..\dep\MclTK.dll</HintPath>
       </Reference>

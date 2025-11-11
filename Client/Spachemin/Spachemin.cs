@@ -1,8 +1,8 @@
-using MclTK;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using SpacheNet;
+using MclTK;
+using MclNet;
 using SoupEngine;
 using SoupEngine.Objects;
 
@@ -18,7 +18,6 @@ public class Spachemin : SoupWindow
         new Vector3(0.0f, 0.0f, 0.0f),
     };
     
-    private readonly SpacheNetClient Net;
     private Player[] Players;
     private Player LocalPlayer;
     private MclObject Skybox;
@@ -28,9 +27,8 @@ public class Spachemin : SoupWindow
     private bool ThirdPerson = true;
     private float CameraDistance = 1.0f;
     
-    public Spachemin(SpacheNetClient _net)
+    public Spachemin(MclNetClient net) : base(net)
     {
-        Net = _net;
         Size = (700, 700);
         Title = "Spachemin";
         CursorState = CursorState.Grabbed;
@@ -164,7 +162,7 @@ public class Spachemin : SoupWindow
         string? ip = null;
         if (!(args.Length > 0 && args[0] == "local")) ip = Console.ReadLine();
         if (ip?.Trim().ToLower() == "l") ip = null;
-        SpacheNetClient net = new SpacheNetClient();
+        MclNetClient net = new MclNetClient();
         net.Connect(ip);
         Console.WriteLine("Connected");
         Spachemin spachemin = new Spachemin(net);
