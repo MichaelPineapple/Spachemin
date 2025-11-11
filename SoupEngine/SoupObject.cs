@@ -1,7 +1,7 @@
 using MclTK;
 using OpenTK.Mathematics;
 
-namespace SoupEngine.Objects;
+namespace SoupEngine;
 
 public class SoupObject : MclObject
 {

@@ -4,7 +4,6 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using MclTK;
 using MclNet;
 using SoupEngine;
-using SoupEngine.Objects;
 
 namespace Spachemin;
 
@@ -29,9 +28,7 @@ public class Spachemin : SoupWindow
     
     public Spachemin(MclNetClient net) : base(net)
     {
-        Size = (700, 700);
-        Title = "Spachemin";
-        CursorState = CursorState.Grabbed;
+        Title = "Spachemin Alpha";
         
         string pathApp = Path.GetDirectoryName(Environment.ProcessPath) + "/Assets/";
         string pathShaders = pathApp + "Shaders/";
@@ -43,7 +40,7 @@ public class Spachemin : SoupWindow
         MclShader shaderSkybox = new MclShader(pathDefaultVertShader, pathShaders + "skybox.frag");
         
         MclMesh meshPlayer = new MclMesh(pathMeshes + "player.obj", shaderDefault);
-        MclMesh meshPlanet = new MclMesh(pathMeshes + "sphere.obj", shaderDefault);
+        MclMesh meshPlanet = new MclMesh(pathMeshes + "Planets/planet10.obj", shaderDefault);
         MclMesh meshSkybox = new MclMesh(pathMeshes + "skybox.obj", shaderSkybox);
         
         MclTexture texGrid = new MclTexture(pathTextures + "grid.png"); 
@@ -51,8 +48,8 @@ public class Spachemin : SoupWindow
         
         Skybox = new MclObject(Vector3.Zero, meshSkybox, texSkybox); 
         MclObject planet0 = new MclObject(new Vector3(0.0f, 0.0f, 0.0f), meshPlanet, texGrid);
-        MclObject planet1 = new MclObject(new Vector3(-7.0f, 10.0f, 5.0f), meshPlanet, texGrid);
-        MclObject planet2 = new MclObject(new Vector3(20.0f, -3.0f, 12.0f), meshPlanet, texGrid);
+        MclObject planet1 = new MclObject(new Vector3(-70.0f, 100.0f, 98.0f), meshPlanet, texGrid);
+        MclObject planet2 = new MclObject(new Vector3(200.0f, -30.0f, 120.0f), meshPlanet, texGrid);
         
         MclObjects.Add(Skybox);
         MclObjects.Add(planet0);
@@ -62,7 +59,7 @@ public class Spachemin : SoupWindow
         Players = new Player[Net.PlayerCount];
         for (int i = 0; i < Players.Length; i++)
         {
-            Players[i] = new Player(new Vector3(-2.0f, 0.0f, -2.0f), meshPlayer, texGrid);
+            Players[i] = new Player(new Vector3(-15.0f, 0.0f, -15.0f), meshPlayer, texGrid);
             Players[i].Color = COLORS[i];
             MclObjects.Add(Players[i]);
         }
@@ -71,9 +68,9 @@ public class Spachemin : SoupWindow
         LightDirectional = new Vector3(0.5f, 0.5f, 0.5f);
         LightDirectionalDirection = new Vector3(0.5f, -1.0f, 0.0f);
         
-        GravitySources.Add(new GravitySource(planet0.Position, 0.001f));
-        GravitySources.Add(new GravitySource(planet1.Position, 0.001f));
-        GravitySources.Add(new GravitySource(planet2.Position, 0.001f));
+        GravitySources.Add(new GravitySource(planet0.Position, 0.01f, 10.0f));
+        GravitySources.Add(new GravitySource(planet1.Position, 0.01f, 10.0f));
+        GravitySources.Add(new GravitySource(planet2.Position, 0.01f, 10.0f));
         
         LocalPlayer = Players[Net.PlayerId];
         Camera = new MclCamera();
@@ -170,4 +167,3 @@ public class Spachemin : SoupWindow
         net.Disconnect();  
     }
 }
-

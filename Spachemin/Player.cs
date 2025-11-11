@@ -1,6 +1,6 @@
 using MclTK;
 using OpenTK.Mathematics;
-using SoupEngine.Objects;
+using SoupEngine;
 
 namespace Spachemin;
 

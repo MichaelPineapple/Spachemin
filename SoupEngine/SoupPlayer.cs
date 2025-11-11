@@ -1,7 +1,7 @@
 using MclTK;
 using OpenTK.Mathematics;
 
-namespace SoupEngine.Objects;
+namespace SoupEngine;
 
 public class SoupPlayer : SoupObject
 {
@@ -13,16 +13,6 @@ public class SoupPlayer : SoupObject
     private float Yaw = -MathHelper.PiOver2;
     
     public SoupPlayer(Vector3 pos, MclMesh mesh, MclTexture tex) : base(pos, mesh, tex) { }
-    
-    private void UpdateVectors()
-    {
-        Front.X = MathF.Cos(Pitch) * MathF.Cos(Yaw);
-        Front.Y = MathF.Sin(Pitch);
-        Front.Z = MathF.Cos(Pitch) * MathF.Sin(Yaw);
-        Front = Vector3.Normalize(Front);
-        Right = Vector3.Normalize(Vector3.Cross(Front, Vector3.UnitY));
-        Up = Vector3.Normalize(Vector3.Cross(Right, Front));
-    }
     
     public void SetPitch(float val)
     {
@@ -61,5 +51,15 @@ public class SoupPlayer : SoupObject
     public float GetYaw()
     {
         return Yaw;
+    }
+    
+    private void UpdateVectors()
+    {
+        Front.X = MathF.Cos(Pitch) * MathF.Cos(Yaw);
+        Front.Y = MathF.Sin(Pitch);
+        Front.Z = MathF.Cos(Pitch) * MathF.Sin(Yaw);
+        Front = Vector3.Normalize(Front);
+        Right = Vector3.Normalize(Vector3.Cross(Front, Vector3.UnitY));
+        Up = Vector3.Normalize(Vector3.Cross(Right, Front));
     }
 }

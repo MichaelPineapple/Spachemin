@@ -1,7 +1,7 @@
 ﻿using OpenTK.Mathematics;
 using MclTK;
 using MclNet;
-using SoupEngine.Objects;
+using OpenTK.Windowing.Common;
 
 namespace SoupEngine;
 
@@ -13,13 +13,15 @@ public class SoupWindow : MclWindow
     public SoupWindow(MclNetClient net)
     {
         Net = net;
+        Title = "SoupEngine Window";
+        CursorState = CursorState.Grabbed;
     }
-    
+
     protected override void OnUpdateFrame(double dt)
     {
         for (int i = 0; i < MclObjects.Count; i++) UpdateObject(MclObjects[i]);
     }
-    
+
     private void UpdateObject(MclObject obj)
     {
         if (obj is SoupObject)
@@ -31,15 +33,14 @@ public class SoupWindow : MclWindow
             {
                 GravitySource gravSrc = GravitySources[i];
                 Vector3 gravSrcPos = gravSrc.Position;
-                const float planetRadius = 1.0f;
-                if ((gravSrcPos - pos).Length > planetRadius)
+                if ((gravSrcPos - pos).Length > gravSrc.Radius)
                 {
                     Vector3 forceGravity = CalculateGravityVector(1.0f, pos, gravSrcPos, 1.0f, gravSrc.Mass);
                     physObj.ApplyForce(forceGravity);
                 }
                 else physObj.Velocity /= 2.0f;
             }
-            
+
             physObj.Update();
         }
     }
